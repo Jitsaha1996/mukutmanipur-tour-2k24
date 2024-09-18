@@ -34,7 +34,6 @@ const MenuContainer = styled(Box)(({ theme }) => ({
 const Header: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate(); 
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const onHandleregister =()=>{
     navigate("/register");
   }

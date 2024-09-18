@@ -32,10 +32,6 @@ const StyledBox = styled(Box)(({ theme }) => ({
     },
 }));
 
-interface FamilyMember {
-    name: string;
-    seatPreference: string;
-}
 
 const seatPreferences = [
     'Window Seat',
@@ -67,7 +63,7 @@ const Register: React.FC = () => {
 
 
     const handleChange = (e: any, index?: number) => {
-        const { name, value, dataset } = e.target;
+        const { name, value } = e.target;
 
         if (index !== undefined) {
 
@@ -115,7 +111,7 @@ const Register: React.FC = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/users/', {
+            const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
