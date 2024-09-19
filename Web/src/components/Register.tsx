@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Box,
     Button,
@@ -9,13 +9,14 @@ import {
     InputLabel,
     Select,
 } from '@mui/material';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/system';
 import { useTheme } from '@mui/material/styles';
 import Toaster from './Toaster';
 import { setUser } from '../redux/userSlice';
 import { IUser } from '../common/user';
+import { RootState } from '../redux/store';
 
 // Styled Box for form
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -45,6 +46,7 @@ const Register: React.FC = () => {
     const theme = useTheme();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
     const [toasterOpen, setToasterOpen] = useState(false);
     const [toasterMessage, setToasterMessage] = useState('');
     const [toasterSeverity, setToasterSeverity] = useState<'success' | 'error'>('success');
@@ -56,12 +58,17 @@ const Register: React.FC = () => {
         password: '',
         confirmPassword: '',
         pic: '',
-        familyMembers: [{ name: '', seatPreference: '' }]
+        familyMembers: [{ name: '', seatPreference: '', seatNumber: '' }]
     });
 
     const [numFamilyMembers, setNumFamilyMembers] = useState(1);
 
+useEffect(()=>{
+if(userData){
+    navigate("/user-details");
 
+}
+},[])
     const handleChange = (e: any, index?: number) => {
         const { name, value } = e.target;
 
@@ -81,7 +88,7 @@ const Register: React.FC = () => {
     const handleFamilyMembersChange = (e: any) => {
         const value = Number(e.target.value);
         setNumFamilyMembers(value);
-        const familyMembers = Array.from({ length: value }, () => ({ name: '', seatPreference: '' }));
+        const familyMembers = Array.from({ length: value }, () => ({ name: '', seatPreference: '', seatNumber: '' }));
         setFormData({ ...formData, familyMembers });
     };
 
@@ -137,7 +144,7 @@ const Register: React.FC = () => {
                 password: '',
                 confirmPassword: '',
                 pic: '',
-                familyMembers: [{ name: '', seatPreference: '' }]
+                familyMembers: [{ name: '', seatPreference: '', seatNumber: '' }]
             });
             setNumFamilyMembers(1);
         } catch (error: any) {

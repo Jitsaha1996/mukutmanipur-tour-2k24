@@ -21,6 +21,11 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    isConfirmSeatBooking: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
     phone: {
       type: String,
       required: true,
@@ -50,6 +55,11 @@ const userSchema = mongoose.Schema(
         seatPreference: {
           type: String,
           required: true,
+        },
+        seatNumber: {
+          type: String,
+          required: false,
+          default:""
         },
       },
     ],

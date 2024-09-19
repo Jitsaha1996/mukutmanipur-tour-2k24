@@ -23,6 +23,7 @@ const registerUsers = asynHandler(async (req, res) => {
       pic: user.pic,
       email: user.email,
       isAdmin: user.isAdmin,
+      isConfirmSeatBooking: user.isConfirmSeatBooking,
       phone: user.phone,
       dob: user.dob,
       familyMembers: user.familyMembers,
@@ -90,6 +91,7 @@ const authUsers = asynHandler(async (req, res) => {
       rName: user.rName,
       email: user.email,
       isAdmin: user.isAdmin,
+      isConfirmSeatBooking: user.isConfirmSeatBooking,
       familyMembers: user.familyMembers,
       isArchived: user.isArchived,
       pic: user.pic,
@@ -109,4 +111,33 @@ const getUserList = asynHandler(async (req, res) => {
   const userList = await User.find();
   res.json(userList);
 })
-module.exports = { registerUsers, authUsers, getUserList, editUsers };
+
+const getUserByEmail = asynHandler(async (req, res) => {
+  const { email } = req.params;
+  console.log("kk",email); // Get email from request parameters
+
+  // Find the user by email
+  const user = await User.findOne({ email });
+  console.log(user);
+
+  // Check if user exists
+  if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+  }
+
+  // Return the user data
+  res.json({
+      _id: user._id,
+      rName: user.rName,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isConfirmSeatBooking: user.isConfirmSeatBooking,
+      familyMembers: user.familyMembers,
+      isArchived: user.isArchived,
+      pic: user.pic,
+      dob: user.dob,
+      phone: user.phone
+  });
+});
+module.exports = { registerUsers, authUsers, getUserList, editUsers , getUserByEmail };

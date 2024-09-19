@@ -3,6 +3,7 @@
 export interface FamilyMember {
     name: string;
     seatPreference: string;
+    seatNumber?: string;
 }
 
 export interface IUser {
@@ -14,4 +15,6 @@ export interface IUser {
     confirmPassword: string;
     pic: string;
     familyMembers: FamilyMember[];
+    isConfirmSeatBooking?:boolean;
+    isAdmin?:boolean;
 }
