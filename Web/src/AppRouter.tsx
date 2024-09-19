@@ -2,12 +2,13 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { About } from './components/About';
-import { Contact } from './components/Contact';
 import Header from './components/Header';
 import Register from './components/Register';
 import UserDetails from './components/UserDetails';
 import Login from './components/Login';
 import Home from './components/Home';
+import Contact from './components/Contact';
+import AdminPanel from './components/admin/AdminPanel';
 
 // Define the type for your route configuration
 interface RouteConfig {
@@ -22,6 +23,7 @@ const routes: RouteConfig[] = [
   { path: '/register', element: <Register /> },
   { path: '/user-details', element: <UserDetails /> },
   { path: '/login', element: <Login /> },
+  { path: '/admin-panel', element: <AdminPanel /> },
 ];
 
 const AppRouter: React.FC = () => {

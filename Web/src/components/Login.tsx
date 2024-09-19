@@ -9,6 +9,7 @@ import {
     Avatar,
     Grid,
     useTheme,
+    CircularProgress,
 } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
 import { useNavigate } from 'react-router-dom';
@@ -20,21 +21,25 @@ const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false); // Loading state
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const theme = useTheme();
     const [toasterOpen, setToasterOpen] = useState(false);
     const [toasterMessage, setToasterMessage] = useState('');
     const [toasterSeverity, setToasterSeverity] = useState<'success' | 'error'>('success');
+
     const handleCloseToaster = () => {
         setToasterOpen(false);
     };
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setLoading(true); // Start loading
 
         try {
-            const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/login', {
+            const response = await fetch('http://localhost:5000/api/users/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -47,20 +52,24 @@ const Login: React.FC = () => {
                 setToasterSeverity('error');
                 setToasterOpen(true);
                 throw new Error('Invalid email or password');
-
             }
-
+        
             // Handle successful login here
             const data = await response.json();
-
-            dispatch(setUser(data)); // Dispatch user data to Redux store
+            dispatch(setUser(data));
             setToasterMessage("Login successful!");
             setToasterSeverity('success');
             setToasterOpen(true);
-            navigate('/user-details');
-            // Navigate to the desired page after login
+
+            // Use a timeout to delay the navigation so that toaster can show
+            setTimeout(() => {
+                setLoading(false); // Stop loading
+                navigate('/user-details');
+            }, 1500); // Adjust the delay as needed
+            
         } catch (err: any) {
             setError(err.message);
+            setLoading(false); // Stop loading on error
         }
     };
 
@@ -100,6 +109,7 @@ const Login: React.FC = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
+                        disabled={loading} // Disable input when loading
                         sx={{
                             transition: '0.3s',
                             '&:hover': { transform: 'scale(1.02)' },
@@ -114,6 +124,7 @@ const Login: React.FC = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        disabled={loading} // Disable input when loading
                         sx={{
                             transition: '0.3s',
                             '&:hover': { transform: 'scale(1.02)' },
@@ -131,8 +142,9 @@ const Login: React.FC = () => {
                                 transform: 'scale(1.05)',
                             },
                         }}
+                        disabled={loading} // Disable button when loading
                     >
-                        Login
+                        {loading ? <CircularProgress size={24} /> : 'Login'}
                     </Button>
                 </Box>
                 <Grid container justifyContent="flex-end" sx={{ mt: 2 }}>

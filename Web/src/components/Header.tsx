@@ -48,7 +48,7 @@ const Header: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const onHandleregister = () => {
-    navigate("/register");
+    navigate("/login");
   };
 
   const onHandleContact = () => {

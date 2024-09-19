@@ -19,7 +19,7 @@ const UserDetails: React.FC = () => {
 
             if (storedUserData) {
                 try {
-                    const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/users/email/${storedUserData.email}`, {
+                    const response = await fetch(`http://localhost:5000/api/users/email/${storedUserData.email}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',

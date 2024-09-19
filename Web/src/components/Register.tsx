@@ -8,6 +8,7 @@ import {
     FormControl,
     InputLabel,
     Select,
+    CircularProgress,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -33,7 +34,6 @@ const StyledBox = styled(Box)(({ theme }) => ({
     },
 }));
 
-
 const seatPreferences = [
     'Window Seat',
     'Middle',
@@ -46,6 +46,7 @@ const Register: React.FC = () => {
     const theme = useTheme();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const [loading, setLoading] = useState(false); // Loading state
     const userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
     const [toasterOpen, setToasterOpen] = useState(false);
     const [toasterMessage, setToasterMessage] = useState('');
@@ -62,18 +63,18 @@ const Register: React.FC = () => {
     });
 
     const [numFamilyMembers, setNumFamilyMembers] = useState(1);
+    const [isPhotoUploaded, setIsPhotoUploaded] = useState(false); // New state for photo upload status
 
-useEffect(()=>{
-if(userData){
-    navigate("/user-details");
+    useEffect(() => {
+        if (userData) {
+            navigate("/user-details");
+        }
+    }, [userData, navigate]);
 
-}
-},[])
     const handleChange = (e: any, index?: number) => {
         const { name, value } = e.target;
 
         if (index !== undefined) {
-
             const updatedFamilyMembers = [...formData.familyMembers];
             updatedFamilyMembers[index] = {
                 ...updatedFamilyMembers[index],
@@ -98,11 +99,15 @@ if(userData){
             const reader = new FileReader();
             reader.onloadend = () => {
                 setFormData({ ...formData, pic: reader.result as string });
+                setToasterOpen(true);
+                setToasterSeverity("success");
+                setToasterMessage("Photo Uploaded!!");
+                setIsPhotoUploaded(true); // Update the state to reflect photo upload
+                setTimeout(() => setToasterOpen(false), 2000); // Delay toaster close
             };
             reader.readAsDataURL(file);
         }
     };
-
 
     const handleCloseToaster = () => {
         setToasterOpen(false);
@@ -110,6 +115,7 @@ if(userData){
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         if (formData.password !== formData.confirmPassword) {
             setToasterMessage("Passwords do not match");
             setToasterSeverity('error');
@@ -118,7 +124,7 @@ if(userData){
         }
 
         try {
-            const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/', {
+            const response = await fetch('http://localhost:5000/api/users/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -132,10 +138,17 @@ if(userData){
             if (!response.ok) throw new Error('Registration failed');
             const userData = await response.json();
             dispatch(setUser(userData)); // Dispatch user data to Redux store
-            navigate('/user-details');
+            
             setToasterMessage("Registration successful!");
             setToasterSeverity('success');
             setToasterOpen(true);
+
+            // Use a timeout to delay the navigation so that toaster can show
+            setTimeout(() => {
+                setLoading(false); // Stop loading
+                navigate('/user-details');
+            }, 1500); 
+
             setFormData({
                 rName: '',
                 email: '',
@@ -147,16 +160,19 @@ if(userData){
                 familyMembers: [{ name: '', seatPreference: '', seatNumber: '' }]
             });
             setNumFamilyMembers(1);
+            setIsPhotoUploaded(false); // Reset photo upload state after registration
         } catch (error: any) {
             setToasterMessage(error.message);
             setToasterSeverity('error');
             setToasterOpen(true);
+            setLoading(false); 
         }
     };
+
     return (
         <StyledBox>
             <Typography variant="h4" gutterBottom>
-                Register for Night Picnic
+                MukutManipur 2k24 Picnic!!
             </Typography>
             <form onSubmit={handleSubmit} style={{ width: '100%' }}>
                 <Box display="flex" flexDirection="column" gap={2}>
@@ -252,7 +268,6 @@ if(userData){
                                     name="seatPreference"
                                     value={member.seatPreference}
                                     onChange={(e) => handleChange(e, index)}
-
                                     required
                                 >
                                     {seatPreferences.map((preference) => (
@@ -262,7 +277,6 @@ if(userData){
                                     ))}
                                 </Select>
                             </FormControl>
-
                         </Box>
                     ))}
                     <Box sx={{ marginY: "20px" }}>
@@ -274,13 +288,36 @@ if(userData){
                             onChange={handleImageUpload}
                         />
                         <label htmlFor="upload-picture">
-                            <Button variant="contained" component="span">
+                            <Button
+                                variant="contained"
+                                component="span"
+                                sx={{
+                                    backgroundColor: isPhotoUploaded ? 'green' : theme.palette.primary.main,
+                                    '&:hover': {
+                                        backgroundColor: isPhotoUploaded ? 'darkgreen' : theme.palette.primary.dark,
+                                    },
+                                }}
+                            >
                                 Upload Picture
                             </Button>
                         </label>
                     </Box>
-                    <Button type="submit" variant="contained" color="primary">
-                        Register
+
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        sx={{
+                            mt: 2,
+                            '&:hover': {
+                                backgroundColor: theme.palette.secondary.main,
+                                transform: 'scale(1.05)',
+                            },
+                        }}
+                        disabled={loading} // Disable button when loading
+                    >
+                        {loading ? <CircularProgress size={24} /> : 'Register'}
                     </Button>
                 </Box>
             </form>
