@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Box,
     TextField,
@@ -14,8 +14,10 @@ import {
 import LockIcon from '@mui/icons-material/Lock';
 import { useNavigate } from 'react-router-dom';
 import Toaster from './Toaster';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../redux/userSlice';
+import { RootState } from '../redux/store';
+import { IUser } from '../common/user';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -28,6 +30,13 @@ const Login: React.FC = () => {
     const [toasterOpen, setToasterOpen] = useState(false);
     const [toasterMessage, setToasterMessage] = useState('');
     const [toasterSeverity, setToasterSeverity] = useState<'success' | 'error'>('success');
+    const userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
+    
+    useEffect(() => {
+        if (userData) {
+            navigate("/user-details");
+        }
+    }, [userData, navigate]);
 
     const handleCloseToaster = () => {
         setToasterOpen(false);

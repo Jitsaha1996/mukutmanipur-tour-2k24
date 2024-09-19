@@ -8,6 +8,7 @@ import {
     useTheme,
     styled,
 } from '@mui/material';
+import AdminRegistration from './AdminRegistration'; // Import the new component
 
 // Styled components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -30,9 +31,10 @@ const TabContent = styled(Box)(({ theme }) => ({
     boxShadow: theme.shadows[3],
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
+    alignItems: 'flex-start', // Align items to the start for better responsiveness
     [theme.breakpoints.down('sm')]: {
         padding: theme.spacing(1),
+        alignItems: 'center', // Center items on smaller screens
     },
 }));
 
@@ -66,21 +68,11 @@ const AdminPanel: React.FC = () => {
                 </Tabs>
             </StyledAppBar>
             <TabContent>
-                {activeTab === 0 && (
-                    <Typography variant="h6">Registration Content</Typography>
-                )}
-                {activeTab === 1 && (
-                    <Typography variant="h6">Seat Details Content</Typography>
-                )}
-                {activeTab === 2 && (
-                    <Typography variant="h6">Budget Content</Typography>
-                )}
-                {activeTab === 3 && (
-                    <Typography variant="h6">Menu Content</Typography>
-                )}
-                {activeTab === 4 && (
-                    <Typography variant="h6">Letsee Content</Typography>
-                )}
+                {activeTab === 0 && <AdminRegistration />}
+                {activeTab === 1 && <Typography variant="h6">Seat Details Content</Typography>}
+                {activeTab === 2 && <Typography variant="h6">Budget Content</Typography>}
+                {activeTab === 3 && <Typography variant="h6">Menu Content</Typography>}
+                {activeTab === 4 && <Typography variant="h6">Letsee Content</Typography>}
             </TabContent>
         </Box>
     );

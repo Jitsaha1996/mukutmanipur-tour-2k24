@@ -41,7 +41,7 @@ const registerUsers = asynHandler(async (req, res) => {
 
 })
 const editUsers = asynHandler(async (req, res) => {
-  const { rName, pic, dob, phone, email, isArchived, familyMembers } = req.body;
+  const { rName, pic, dob, phone, email, isArchived, familyMembers,isConfirmSeatBooking } = req.body;
   const userExist = await User.findOne({ email })
   const filter = { email: userExist.email };
   console.log("Filter1", userExist);
@@ -56,7 +56,8 @@ const editUsers = asynHandler(async (req, res) => {
       dob: dob,
       phone: phone,
       isArchived: isArchived,
-      familyMembers: familyMembers
+      familyMembers: familyMembers,
+      isConfirmSeatBooking:isConfirmSeatBooking
 
 
     },
@@ -67,6 +68,7 @@ const editUsers = asynHandler(async (req, res) => {
     res.status(200).json({
       message: `${email} updated sucessfully!!`,
       status: "sucess",
+      email:email,
       statuscode: 200
     })
   } else {

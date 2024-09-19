@@ -4,6 +4,7 @@ const {registerUsers, authUsers,getUserList,editUsers,getUserByEmail}=require(".
 router.route('/').post(registerUsers);
 
 router.route('/').get(getUserList);
+router.route('/edit').put(editUsers);
 
 router.route('/login').post(authUsers);
 router.get('/email/:email', getUserByEmail);
