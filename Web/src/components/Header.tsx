@@ -54,6 +54,9 @@ const Header: React.FC = () => {
   const onHandleContact = () => {
     navigate("/contact");
   };
+  const onHandleAdmin = () => {
+    navigate("/admin-panel");
+  };
 
   const toggleDrawer = (open: boolean) => () => {
     setDrawerOpen(open);
@@ -68,6 +71,7 @@ const Header: React.FC = () => {
     { text: 'Home', onClick: () => navigate('/') },
     { text: 'About', onClick: () => navigate('/about') },
     { text: 'Contact', onClick: onHandleContact },
+    { text: 'Admin', onClick: onHandleAdmin },
     ...(userData ? 
       [{ text: 'Logout', onClick: onHandleLogout }] : 
       [{ text: 'Login', onClick: () => navigate('/login') }]
@@ -86,6 +90,7 @@ const Header: React.FC = () => {
           <NavButton color="primary">Home</NavButton>
           <NavButton color="primary">About</NavButton>
           <NavButton color="primary" onClick={onHandleContact}>Contact</NavButton>
+          <NavButton color="primary" onClick={onHandleAdmin}>Admin</NavButton>
           {userData ? 
             <NavButton color="primary" onClick={onHandleLogout}>Logout</NavButton> :
             <NavButton color="primary" onClick={onHandleregister}>Login</NavButton>
