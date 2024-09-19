@@ -8,7 +8,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TableSortLabel,
     IconButton,
     Paper,
     useTheme,
@@ -17,8 +16,9 @@ import {
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
-// Define a styled component for better responsiveness
+// Styled components for better responsiveness
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    textAlign: 'center', // Center align text in table cells
     [theme.breakpoints.down('sm')]: {
         fontSize: '0.8rem', // Adjust font size for smaller screens
     },
@@ -30,17 +30,9 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
     },
 }));
 
-interface IUser {
-    _id: string;
-    rName: string;
-    email: string;
-    isConfirmSeatBooking: boolean;
-    isArchived: boolean;
-}
-
 const AdminRegistration: React.FC = () => {
     const theme = useTheme();
-    const [users, setUsers] = useState<IUser[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -57,17 +49,17 @@ const AdminRegistration: React.FC = () => {
         fetchUsers();
     }, []);
 
-    const handleApprove = async (user: IUser) => {
+    const handleApprove = async (user: any) => {
         const updatedUser = { ...user, isConfirmSeatBooking: true };
         await updateUser(updatedUser);
     };
 
-    const handleReject = async (user: IUser) => {
+    const handleReject = async (user: any) => {
         const updatedUser = { ...user, isArchived: true };
         await updateUser(updatedUser);
     };
 
-    const updateUser = async (user: IUser) => {
+    const updateUser = async (user: any) => {
         try {
             const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/users/edit`, {
                 method: 'PUT',
@@ -90,7 +82,7 @@ const AdminRegistration: React.FC = () => {
 
     return (
         <Box sx={{ padding: theme.spacing(2) }}>
-            <Typography variant="h4" gutterBottom>
+            <Typography variant="h4" gutterBottom textAlign="center">
                 User Registration
             </Typography>
             <StyledTableContainer>
@@ -99,13 +91,10 @@ const AdminRegistration: React.FC = () => {
                         <TableHead>
                             <TableRow>
                                 <StyledTableCell>
-                                    <TableSortLabel>Name</TableSortLabel>
+                                    Email
                                 </StyledTableCell>
                                 <StyledTableCell>
-                                    <TableSortLabel>Email</TableSortLabel>
-                                </StyledTableCell>
-                                <StyledTableCell>
-                                    <TableSortLabel>Seat Confirmation</TableSortLabel>
+                                    Seat Confirmation
                                 </StyledTableCell>
                                 <StyledTableCell align="right">Actions</StyledTableCell>
                             </TableRow>
@@ -113,8 +102,9 @@ const AdminRegistration: React.FC = () => {
                         <TableBody>
                             {users.map((user) => (
                                 <TableRow key={user._id}>
-                                    <StyledTableCell>{user.rName}</StyledTableCell>
-                                    <StyledTableCell>{user.email}</StyledTableCell>
+                                    <StyledTableCell>
+                                        {user.rName} ({user.email})
+                                    </StyledTableCell>
                                     <StyledTableCell>
                                         {user.isConfirmSeatBooking ? 'Approved' : 'Pending'}
                                     </StyledTableCell>
@@ -144,6 +134,7 @@ const AdminRegistration: React.FC = () => {
             </StyledTableContainer>
         </Box>
     );
+    
 };
 
 export default AdminRegistration;

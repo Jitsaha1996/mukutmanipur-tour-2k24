@@ -66,6 +66,9 @@ const Header: React.FC = () => {
     dispatch(clearUser());
     navigate("/user-details");
   }
+  const onHandleDetails = () => {
+    navigate("/user-details");
+  }
 
   const menuItems = [
     { text: 'Home', onClick: () => navigate('/') },
@@ -73,7 +76,10 @@ const Header: React.FC = () => {
     { text: 'Contact', onClick: onHandleContact },
     { text: 'Admin', onClick: onHandleAdmin },
     ...(userData ? 
-      [{ text: 'Logout', onClick: onHandleLogout }] : 
+      [{ text: 'Logout', onClick: onHandleLogout },
+        { text: 'Details', onClick: onHandleDetails },
+      ]
+       : 
       [{ text: 'Login', onClick: () => navigate('/login') }]
   )
   ];

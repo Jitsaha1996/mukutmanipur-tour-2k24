@@ -97,7 +97,7 @@ const UserDetails: React.FC = () => {
             const payload = {
                 ...userData,
                 familyMembers: familyMembers,
-                isArchived: false,
+                isConfirmSeatBooking: false,
             }
             const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/edit', {
                 method: 'PUT',
