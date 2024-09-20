@@ -9,6 +9,7 @@ import {
     styled,
 } from '@mui/material';
 import AdminRegistration from './AdminRegistration'; // Import the new component
+import SeatConfirmation from './SeatConfirmation';
 
 // Styled components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -69,7 +70,7 @@ const AdminPanel: React.FC = () => {
             </StyledAppBar>
             <TabContent>
                 {activeTab === 0 && <AdminRegistration />}
-                {activeTab === 1 && <Typography variant="h6">Seat Details Content</Typography>}
+                {activeTab === 1 && <Typography variant="h6"><SeatConfirmation/></Typography>}
                 {activeTab === 2 && <Typography variant="h6">Budget Content</Typography>}
                 {activeTab === 3 && <Typography variant="h6">Menu Content</Typography>}
                 {activeTab === 4 && <Typography variant="h6">Letsee Content</Typography>}

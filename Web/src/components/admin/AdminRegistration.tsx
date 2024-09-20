@@ -50,12 +50,30 @@ const AdminRegistration: React.FC = () => {
     }, []);
 
     const handleApprove = async (user: any) => {
-        const updatedUser = { ...user, isConfirmSeatBooking: true };
+        const updatedFamilyMembers = user.familyMembers.map((member: any) => ({
+            ...member,
+            seatNumber: "", // Set seatNumber to an empty string
+        }));
+    
+        const updatedUser = {
+            ...user,
+            isConfirmSeatBooking: true,
+            isArchived: false,
+            familyMembers: updatedFamilyMembers,
+        };
+    
         await updateUser(updatedUser);
     };
 
     const handleReject = async (user: any) => {
-        const updatedUser = { ...user, isArchived: true };
+        const updatedFamilyMembers = user.familyMembers.map((member: any) => ({
+            ...member,
+            seatNumber: "", // Set seatNumber to an empty string
+        }));
+        const updatedUser = { ...user, isArchived: true ,isConfirmSeatBooking: false,
+            familyMembers: updatedFamilyMembers,
+
+        };
         await updateUser(updatedUser);
     };
 

@@ -17,4 +17,5 @@ export interface IUser {
     familyMembers: FamilyMember[];
     isConfirmSeatBooking?:boolean;
     isAdmin?:boolean;
+    isArchived?:boolean;
 }

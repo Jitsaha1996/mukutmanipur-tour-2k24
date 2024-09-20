@@ -15,14 +15,16 @@ import {
     FormControl,
     Select,
     MenuItem,
-    Fade,
+    Fade
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; // Import PDF icon
 import { IUser } from '../common/user';
 import { RootState } from '../redux/store';
 import { getFromLocalStorage } from '../redux/localStorage';
 import { setUser } from '../redux/userSlice';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf'; // Import jsPDF
 
 const seatPreferences = [
     'Window Seat',
@@ -60,17 +62,17 @@ const UserDetails: React.FC = () => {
                     const userData = await response.json();
 
                     if (userData) {
-                        dispatch(setUser(userData)); // Dispatch the user data if the fetch is successful
+                        dispatch(setUser(userData));
                         setFamilyMembers(userData.familyMembers);
                         setNumFamilyMembers(userData.familyMembers.length);
                     }
                 } catch (error) {
-                    console.error("Error fetching user data:", error); // Log the error for debugging
+                    console.error("Error fetching user data:", error);
                 }
             }
         };
 
-        fetchUserData(); // Call the async function
+        fetchUserData();
     }, [dispatch]);
 
     const handleEditToggle = () => {
@@ -92,6 +94,7 @@ const UserDetails: React.FC = () => {
 
     const handleUpdate = async () => {
         setLoading(true);
+        // let resetSetNumbers = familyMembers?.map(item => item.seatNumber = "");
 
         try {
             const payload = {
@@ -125,20 +128,59 @@ const UserDetails: React.FC = () => {
 
                     if (userDataresponse) {
                         dispatch(setUser(userDataresponse));
-                       
                     }
                 } catch (error) {
-                    console.error("Error fetching user data:", error); // Log the error for debugging
+                    console.error("Error fetching user data:", error);
                 }
             }
-            dispatch(setUser(updatedUserData)); // Update the Redux state
-            setIsEditing(false); // Exit editing mode
+            dispatch(setUser(updatedUserData));
+            setIsEditing(false);
         } catch (error) {
             console.error("Error updating user data:", error);
         } finally {
             setLoading(false);
         }
     };
+
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF();
+    
+        // Title
+        doc.setFontSize(24);
+        doc.setTextColor(40, 40, 200); // Blue color
+        doc.text("Mahadev ka Dewane Trip to Mukutmanipur 2k24", 10, 10);
+    
+        // User Details
+        doc.setFontSize(20);
+        doc.setTextColor(0, 0, 0); // Black color
+        doc.text("User Details", 10, 30);
+        doc.setFontSize(14);
+        doc.text(`Name: ${userData?.rName}`, 10, 40);
+        doc.text(`Email: ${userData?.email}`, 10, 50);
+        doc.text(`Date of Birth: ${userData?.dob}`, 10, 60);
+        doc.text(`Phone Number: ${userData?.phone}`, 10, 70);
+    
+        // Family Members Section
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 100); // Dark blue color
+        doc.text("Family Members:", 10, 90);
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0); // Black color
+    
+        familyMembers.forEach((member, index) => {
+            const yPosition = 100 + (index * 30); // Increase spacing
+            doc.text(`- Name: ${member.name}`, 10, yPosition);
+            doc.text(`  Seat Preference: ${member.seatPreference}`, 10, yPosition + 10);
+            doc.text(`  Seat Number: ${member.seatNumber || 'Not Assigned'}`, 10, yPosition + 20);
+            
+            // Draw a line after each member for better separation
+            doc.line(10, yPosition + 25, 200, yPosition + 25); // Draw line
+        });
+    
+        // Save the document
+        doc.save("user_details.pdf");
+    };
+    
 
     if (!userData) {
         return (
@@ -177,9 +219,18 @@ const UserDetails: React.FC = () => {
                     overflow: 'hidden',
                 }}
             >
-                <Typography variant="h4" gutterBottom textAlign="center">
-                    User Details
-                </Typography>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Typography variant="h4" gutterBottom textAlign="center">
+                        User Details
+                    </Typography>
+                    {/* PDF Icon */}
+                    {userData.isConfirmSeatBooking && !userData.isArchived && familyMembers.length > 0 && familyMembers.some(member => member.seatNumber) && (
+                        <IconButton onClick={handleDownloadPDF}>
+                            <PictureAsPdfIcon color="primary" />
+                        </IconButton>
+                    )}
+                </Box>
+
                 <Card variant="outlined" sx={{ marginBottom: 2 }}>
                     <CardContent>
                         <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
@@ -189,10 +240,9 @@ const UserDetails: React.FC = () => {
                         <Box display="flex" alignItems="center" justifyContent="center">
                             <Avatar
                                 alt={userData.rName}
-                                src={userData.pic} // Assuming userData has a picture URL
+                                src={userData.pic}
                                 sx={{ width: 100, height: 100, marginRight: 2 }}
                             />
-
                         </Box>
                         <Divider sx={{ my: 2 }} />
                         <Typography variant="h6">Personal Information</Typography>
@@ -203,16 +253,24 @@ const UserDetails: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                {/* Booking Confirmation Status Section */}
                 <Box sx={{ marginBottom: 2, padding: 2, borderRadius: 1, backgroundColor: userData.isConfirmSeatBooking ? '#e8f5e9' : '#fff3e0' }}>
                     <Typography variant="h6" textAlign="center" color={userData.isConfirmSeatBooking ? 'green' : 'orange'}>
-                        {userData.isConfirmSeatBooking ? 'Approved' : 'On Hold'}
+                        { !userData.isArchived && userData.isConfirmSeatBooking ? 'Approved' : null}
+                        { !userData.isArchived && !userData.isConfirmSeatBooking ? 'On Hold' : null}
                     </Typography>
+                    {userData?.isArchived?<Typography variant="h6" textAlign="center" color='red'>Cancelled</Typography>:null}
                     <Typography textAlign="center">
-                        {userData.isConfirmSeatBooking
+                        {!userData.isArchived && userData.isConfirmSeatBooking
                             ? 'Welcome to Mahadev ke Dewane tour of 2k24 Mukutmanipur trip with itineraries of these days.'
-                            : 'Thank you for your request! Our team is currently reviewing it and will take action shortly. In the meantime, we appreciate your patience and encourage you to stay tuned for updates!'}
+                            : null}
+                        {!userData.isArchived && userData.isConfirmSeatBooking
+                            ? 'Thank you for your request! Our team is currently reviewing it and will take action shortly. In the meantime, we appreciate your patience and encourage you to stay tuned for updates!'
+                            : null}
                     </Typography>
+                    {userData.isArchived ?
+                    <Typography textAlign="center">
+                        We're sorry to inform you that your seat booking has been canceled.
+                    </Typography> : null}
                 </Box>
 
                 <Card variant="outlined">
@@ -224,7 +282,7 @@ const UserDetails: React.FC = () => {
                             </IconButton>
                         </Box>
                         <Grid container spacing={2}>
-                            {isEditing ? (
+                            {!userData?.isArchived && isEditing ? (
                                 <>
                                     <Grid item xs={12}>
                                         <FormControl fullWidth>
@@ -283,6 +341,10 @@ const UserDetails: React.FC = () => {
                                             <Card elevation={1} sx={{ padding: 2, textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.05)' } }}>
                                                 <Typography><strong>Name:</strong> {member.name}</Typography>
                                                 <Typography><strong>Seat Preference:</strong> {member.seatPreference}</Typography>
+                                                {userData?.isConfirmSeatBooking && member?.seatNumber ?
+                                                 <Typography><strong>Seat Number:</strong> {member.seatNumber}</Typography> : null}
+                                                 {userData?.isConfirmSeatBooking && !member?.seatNumber ?
+                                                 <Typography><strong>Seat Number:</strong> Yet to Assign</Typography> : null}
                                             </Card>
                                         </Fade>
                                     </Grid>
