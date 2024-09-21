@@ -55,26 +55,34 @@ const UserDetails: React.FC = () => {
 
     useEffect(() => {
         // Play the audio
-        if(shouldShowAnnouncements){
-            if (audioRef?.current) {
-                audioRef?.current?.play();
-            }
-    
+        
+        const audioElement = audioRef.current;
+
+        if (audioElement) {
+            // Set up a listener for when the audio is ready to play
+            const handleCanPlayThrough = () => {
+                audioElement.play();
+            };
+
+            audioElement.addEventListener('canplaythrough', handleCanPlayThrough);
+
             // Stop the audio after 10 seconds (for example)
             const timer = setTimeout(() => {
-                if (audioRef?.current) {
-                    audioRef?.current?.pause();
-                    audioRef.current.currentTime = 0; // Optionally reset to the start
+                if (audioElement) {
+                    audioElement.pause();
+                    audioElement.currentTime = 0; // Optionally reset to the start
                 }
             }, 10000); // Time in milliseconds (10 seconds)
-    
+
             return () => {
                 clearTimeout(timer); // Clear the timer on component unmount
-                if (audioRef?.current) {
-                    audioRef?.current?.pause(); // Ensure audio is paused
+                audioElement.removeEventListener('canplaythrough', handleCanPlayThrough);
+                if (audioElement) {
+                    audioElement.pause(); // Ensure audio is paused
                 }
             };
         }
+        
         
     }, []);
 
@@ -262,7 +270,7 @@ const UserDetails: React.FC = () => {
                     overflow: 'hidden',
                 }}
             >
-                <audio ref={audioRef} src={announcementMusic} autoPlay loop style={{ display: 'none' }} />
+                {/* <audio ref={audioRef} src={announcementMusic} autoPlay  style={{ display: 'none' }} /> */}
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                     <Typography variant="h4" gutterBottom textAlign="center">
                         User Details
@@ -318,7 +326,7 @@ const UserDetails: React.FC = () => {
 
                 {shouldShowAnnouncements && (
                     <Box sx={{ marginBottom: 2 }}>
-                           <audio ref={audioRef} src={announcementMusic} autoPlay loop style={{ display: 'none' }} />
+                           <audio ref={audioRef} src={announcementMusic} autoPlay  style={{ display: 'none' }} />
                         <Typography variant="h5" color="primary" textAlign="center">
                             Latest Announcements
                         </Typography>
