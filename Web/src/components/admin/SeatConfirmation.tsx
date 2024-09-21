@@ -19,6 +19,7 @@ import {
     useTheme,
     styled,
     TableContainer,
+    MenuItem,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -57,7 +58,18 @@ const SeatConfirmation: React.FC = () => {
     const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
-
+    const [activeSeats, setActiveSeats] = useState<any[]>([]);
+    const fetchActiveSeats = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/busseatdetals/');
+            if (!response.ok) throw new Error('Failed to fetch active seats');
+            const data = await response.json();
+            const filteredSeats = data.filter((seat: any) => seat.seatStatus === true);
+            setActiveSeats(filteredSeats);
+        } catch (error) {
+            console.error('Error fetching active seats:', error);
+        }
+    };
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -73,7 +85,10 @@ const SeatConfirmation: React.FC = () => {
             }
         };
 
+        
+
         fetchUsers();
+        fetchActiveSeats();
     }, []);
 
     const handleEditClick = (user: IUser) => {
@@ -100,8 +115,26 @@ const SeatConfirmation: React.FC = () => {
 
             if (!response.ok) throw new Error('Failed to update user');
 
+            const bulkUpdatePayload = selectedUser.familyMembers.map(member => ({
+                seatNumber: member.seatNumber,
+                seatDetails: member.seatPreference,
+                seatStatus: false,
+            }));
+
+            const bulkUpdateResponse = await fetch('http://localhost:5000/api/busseatdetals/bulkupdates', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(bulkUpdatePayload),
+            });
+
+            if (!bulkUpdateResponse.ok) throw new Error('Failed to bulk update seats');
+
             setSnackbarMessage('Update successful!');
             setSnackbarOpen(true);
+            fetchActiveSeats();
+            
             handleDialogClose();
         } catch (error) {
             console.error('Error updating user:', error);
@@ -140,7 +173,7 @@ const SeatConfirmation: React.FC = () => {
                                 </StyledTableCell>
                             </TableRow>
                         ))}
-                    </TableBody>``````
+                    </TableBody>
                 </Table>
             </TableContainer>
 
@@ -164,6 +197,7 @@ const SeatConfirmation: React.FC = () => {
                                 margin="normal"
                             />
                             <TextField
+                                select
                                 label="Seat Number"
                                 value={member.seatNumber || ''}
                                 onChange={(e) => {
@@ -173,7 +207,13 @@ const SeatConfirmation: React.FC = () => {
                                 }}
                                 fullWidth
                                 margin="normal"
-                            />
+                            >
+                                {activeSeats.map(seat => (
+                                    <MenuItem key={seat.seatNumber} value={seat.seatNumber}>
+                                        {`${seat.seatNumber} - ${seat.seatDetails}`} {/* Displaying seat number and details */}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Box>
                     ))}
                 </DialogContent>

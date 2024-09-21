@@ -105,6 +105,36 @@ const updateBulkSeats = asynHandler(async (req, res) => {
     }
   });
 
+  const deleteSeat = asynHandler(async (req, res) => {
+    const { seatNumber } = req.params; // Assuming seatNumber is passed as a URL parameter
+    
+    // Check if the seat exists
+    const seatExist = await BusSeatModel.findOne({ seatNumber });
+    
+    if (!seatExist) {
+      return res.status(404).json({
+        message: `Seat number ${seatNumber} not found.`,
+        status: "fail",
+        statuscode: 404,
+      });
+    }
+    
+    // Proceed to delete the seat
+    const deletedSeat = await BusSeatModel.deleteOne({ seatNumber });
+  
+    if (deletedSeat.deletedCount === 1) {
+      res.status(200).json({
+        message: `Seat number ${seatNumber} deleted successfully!`,
+        status: "success",
+        statuscode: 200,
+      });
+    } else {
+      res.status(400);
+      throw new Error("Error occurred while deleting the seat.");
+    }
+  });
+  
+
   
 // const getWorkoutById = asynHandler(async (req, res) => {
 //     const note = await Workout.findById(req.params.id);
@@ -118,5 +148,5 @@ const updateBulkSeats = asynHandler(async (req, res) => {
 //     res.json(note);
 //   });
 
-module.exports={createSeat,getAllBusSeatDetails,updateSeat,updateBulkSeats};
+module.exports={createSeat,getAllBusSeatDetails,updateSeat,updateBulkSeats,deleteSeat};
 

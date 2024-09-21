@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
@@ -48,12 +49,14 @@ const SeatDetails: React.FC = () => {
     const [seats, setSeats] = useState<any[]>([]);
     const [open, setOpen] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [deleteSnackbarOpen, setDeleteSnackbarOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentSeat, setCurrentSeat] = useState<any>({
         seatNumber: '',
         seatDetails: 'Window',
         seatStatus: true,
     });
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
     const fetchSeats = async () => {
         const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/');
@@ -79,6 +82,7 @@ const SeatDetails: React.FC = () => {
 
     const handleSnackbarClose = () => {
         setSnackbarOpen(false);
+        setDeleteSnackbarOpen(false);
     };
 
     const handleSubmit = async () => {
@@ -109,6 +113,30 @@ const SeatDetails: React.FC = () => {
         }
     };
 
+    const handleDeleteOpen = (seat: any) => {
+        setCurrentSeat(seat);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleDeleteClose = () => {
+        setDeleteConfirmOpen(false);
+        setCurrentSeat({ seatNumber: '', seatDetails: 'Window', seatStatus: true });
+    };
+
+    const handleDeleteConfirm = async () => {
+        const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/delete/${currentSeat.seatNumber}`, {
+            method: 'GET',
+        });
+
+        if (response.ok) {
+            await fetchSeats(); // Refresh the seat list after deletion
+            setDeleteConfirmOpen(false);
+            setDeleteSnackbarOpen(true);
+        } else {
+            console.error('Failed to delete seat');
+        }
+    };
+
     return (
         <Box sx={{ padding: theme.spacing(2) }}>
             <IconButton onClick={() => handleOpen()} sx={{ marginBottom: 2, color: 'green' }}>
@@ -134,6 +162,9 @@ const SeatDetails: React.FC = () => {
                                 <StyledTableCell align="right">
                                     <IconButton onClick={() => handleOpen(seat)}>
                                         <EditIcon />
+                                    </IconButton>
+                                    <IconButton onClick={() => handleDeleteOpen(seat)} sx={{ color: 'red' }}>
+                                        <DeleteIcon />
                                     </IconButton>
                                 </StyledTableCell>
                             </TableRow>
@@ -184,10 +215,27 @@ const SeatDetails: React.FC = () => {
                 </DialogActions>
             </StyledDialog>
 
+            {/* Delete Confirmation Dialog */}
+            <StyledDialog open={deleteConfirmOpen} onClose={handleDeleteClose}>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogContent>
+                    <Typography>Are you sure you want to delete seat number {currentSeat.seatNumber}?</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDeleteClose} color="secondary">Cancel</Button>
+                    <Button onClick={handleDeleteConfirm} color="primary">Confirm</Button>
+                </DialogActions>
+            </StyledDialog>
+
             {/* Snackbar for notifications */}
             <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
                 <Alert onClose={handleSnackbarClose} severity="success">
                     Seat details updated successfully!
+                </Alert>
+            </Snackbar>
+            <Snackbar open={deleteSnackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity="success">
+                    Seat deleted successfully!
                 </Alert>
             </Snackbar>
         </Box>

@@ -15,18 +15,20 @@ import {
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save'; // Import an icon for the export button
+import { saveAs } from 'file-saver'; // npm install file-saver
 
 // Styled components for better responsiveness
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    textAlign: 'center', // Center align text in table cells
+    textAlign: 'center',
     [theme.breakpoints.down('sm')]: {
-        fontSize: '0.8rem', // Adjust font size for smaller screens
+        fontSize: '0.8rem',
     },
 }));
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
     [theme.breakpoints.down('sm')]: {
-        overflowX: 'auto', // Enable horizontal scrolling on smaller screens
+        overflowX: 'auto',
     },
 }));
 
@@ -49,32 +51,47 @@ const AdminRegistration: React.FC = () => {
         fetchUsers();
     }, []);
 
-    const handleApprove = async (user: any) => {
-        const updatedFamilyMembers = user.familyMembers.map((member: any) => ({
-            ...member,
-            seatNumber: "", // Set seatNumber to an empty string
-        }));
-    
-        const updatedUser = {
-            ...user,
-            isConfirmSeatBooking: true,
-            isArchived: false,
-            familyMembers: updatedFamilyMembers,
-        };
-    
-        await updateUser(updatedUser);
+    const updateSeatsStatus = async (familyMembers: any[]) => {
+        const seatUpdates = familyMembers
+            .filter((member) => member.seatNumber && member.seatNumber.trim() !== '')
+            .map((member) => ({
+                seatNumber: member.seatNumber,
+                seatDetails: member.seatPreference,
+                seatStatus: false,
+            }));
+
+        if (seatUpdates.length > 0) {
+            try {
+                const response = await fetch('http://localhost:5000/api/busseatdetals/bulkupdates', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(seatUpdates),
+                });
+
+                if (!response.ok) throw new Error('Failed to update seats');
+            } catch (error) {
+                console.error('Error updating seats:', error);
+            }
+        }
     };
 
-    const handleReject = async (user: any) => {
+    const handleUserAction = async (user: any, isApproved: boolean) => {
         const updatedFamilyMembers = user.familyMembers.map((member: any) => ({
             ...member,
-            seatNumber: "", // Set seatNumber to an empty string
+            seatNumber: "", // Reset seatNumber if needed
         }));
-        const updatedUser = { ...user, isArchived: true ,isConfirmSeatBooking: false,
-            familyMembers: updatedFamilyMembers,
 
+        const updatedUser = {
+            ...user,
+            isConfirmSeatBooking: isApproved,
+            isArchived: !isApproved,
+            familyMembers: updatedFamilyMembers,
         };
+
         await updateUser(updatedUser);
+        await updateSeatsStatus(user.familyMembers); // Update seat status if approved
     };
 
     const updateUser = async (user: any) => {
@@ -89,7 +106,6 @@ const AdminRegistration: React.FC = () => {
 
             if (!response.ok) throw new Error('Failed to update user');
 
-            // Update local state after success
             setUsers((prevUsers) =>
                 prevUsers.map((u) => (u._id === user._id ? user : u))
             );
@@ -98,22 +114,50 @@ const AdminRegistration: React.FC = () => {
         }
     };
 
+    const exportToCSV = () => {
+        const csvData = users.flatMap(user => 
+            user.familyMembers.map((member:any) => ({
+                Name: user.rName,
+                Email: user.email,
+                DOB: user.dob,
+                Phone: user.phone,
+                SeatNumber: member.seatNumber || '',
+                SeatPreference: member.seatPreference || '',
+                IsConfirmed: user.isConfirmSeatBooking ? 'Yes' : 'No',
+                IsArchived: user.isArchived ? 'Yes' : 'No',
+            }))
+        );
+
+        const csvRows = [
+            ['Name', 'Email', 'DOB', 'Phone', 'SeatNumber', 'SeatPreference', 'IsConfirmed', 'IsArchived'], // Header row
+            ...csvData.map(row => Object.values(row)),
+        ].map(row => row.join(',')).join('\n');
+
+        const blob = new Blob([csvRows], { type: 'text/csv;charset=utf-8;' });
+        saveAs(blob, 'users.csv');
+    };
+
     return (
         <Box sx={{ padding: theme.spacing(2) }}>
             <Typography variant="h4" gutterBottom textAlign="center">
                 User Registration
             </Typography>
+            <Box display="flex" justifyContent="center" sx={{ mb: 2 }}>
+                <IconButton
+                    onClick={exportToCSV}
+                    color="primary"
+                    sx={{ marginLeft: 1 }} // Add some left margin
+                >
+                    <SaveIcon />
+                </IconButton>
+            </Box>
             <StyledTableContainer>
                 <Paper>
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <StyledTableCell>
-                                    Email
-                                </StyledTableCell>
-                                <StyledTableCell>
-                                    Seat Confirmation
-                                </StyledTableCell>
+                                <StyledTableCell>Email</StyledTableCell>
+                                <StyledTableCell>Seat Confirmation</StyledTableCell>
                                 <StyledTableCell align="right">Actions</StyledTableCell>
                             </TableRow>
                         </TableHead>
@@ -129,14 +173,14 @@ const AdminRegistration: React.FC = () => {
                                     <StyledTableCell align="right">
                                         <Box display="flex" justifyContent="flex-end">
                                             <IconButton
-                                                onClick={() => handleApprove(user)}
+                                                onClick={() => handleUserAction(user, true)}
                                                 disabled={user.isConfirmSeatBooking}
                                                 sx={{ color: 'green', '&:disabled': { color: 'grey' } }}
                                             >
                                                 <CheckIcon />
                                             </IconButton>
                                             <IconButton
-                                                onClick={() => handleReject(user)}
+                                                onClick={() => handleUserAction(user, false)}
                                                 disabled={user.isArchived}
                                                 sx={{ color: 'red', '&:disabled': { color: 'grey' } }}
                                             >
@@ -152,7 +196,6 @@ const AdminRegistration: React.FC = () => {
             </StyledTableContainer>
         </Box>
     );
-    
 };
 
 export default AdminRegistration;
