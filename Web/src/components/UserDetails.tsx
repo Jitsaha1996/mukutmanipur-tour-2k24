@@ -19,14 +19,14 @@ import {
     Snackbar,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; 
-import AnnouncementIcon from '@mui/icons-material/Announcement'; 
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import AnnouncementIcon from '@mui/icons-material/Announcement';
 import { IUser } from '../common/user';
 import { RootState } from '../redux/store';
 import { getFromLocalStorage } from '../redux/localStorage';
 import { setUser } from '../redux/userSlice';
 import { useNavigate } from 'react-router-dom';
-import jsPDF from 'jspdf'; 
+import jsPDF from 'jspdf';
 import { motion } from 'framer-motion';
 import announcementMusic from '../assets/checkai.mp3'
 
@@ -50,27 +50,32 @@ const UserDetails: React.FC = () => {
     const [announcements, setAnnouncements] = useState<any[]>([]);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const hasSeatNumbers = familyMembers.some(member => member.seatNumber);
+    const shouldShowAnnouncements = userData?.isConfirmSeatBooking && hasSeatNumbers;
 
     useEffect(() => {
         // Play the audio
-        if (audioRef.current) {
-            audioRef.current.play();
+        if(shouldShowAnnouncements){
+            if (audioRef?.current) {
+                audioRef?.current?.play();
+            }
+    
+            // Stop the audio after 10 seconds (for example)
+            const timer = setTimeout(() => {
+                if (audioRef?.current) {
+                    audioRef?.current?.pause();
+                    audioRef.current.currentTime = 0; // Optionally reset to the start
+                }
+            }, 10000); // Time in milliseconds (10 seconds)
+    
+            return () => {
+                clearTimeout(timer); // Clear the timer on component unmount
+                if (audioRef?.current) {
+                    audioRef?.current?.pause(); // Ensure audio is paused
+                }
+            };
         }
-
-        // Stop the audio after 10 seconds (for example)
-        const timer = setTimeout(() => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current.currentTime = 0; // Optionally reset to the start
-            }
-        }, 10000); // Time in milliseconds (10 seconds)
-
-        return () => {
-            clearTimeout(timer); // Clear the timer on component unmount
-            if (audioRef.current) {
-                audioRef.current.pause(); // Ensure audio is paused
-            }
-        };
+        
     }, []);
 
 
@@ -151,6 +156,23 @@ const UserDetails: React.FC = () => {
 
             if (!response.ok) throw new Error('Failed to update family members');
             const updatedUserData = await response.json();
+            if (updatedUserData?.email) {
+                try {
+                    const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/users/email/${updatedUserData?.email}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (!response.ok) throw new Error('Failed to fetch user data');
+                    const userDataresponse = await response.json();
+                    if (userDataresponse) {
+                        dispatch(setUser(userDataresponse));
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            }
             dispatch(setUser(updatedUserData));
             setIsEditing(false);
         } catch (error) {
@@ -162,6 +184,38 @@ const UserDetails: React.FC = () => {
 
     const handleDownloadPDF = () => {
         const doc = new jsPDF();
+        doc.setFontSize(24);
+        doc.setTextColor(40, 40, 200); // Blue color
+        doc.text("Mahadev ka Dewane Trip to Mukutmanipur 2k24", 10, 10);
+    
+        // User Details
+        doc.setFontSize(20);
+        doc.setTextColor(0, 0, 0); // Black color
+        doc.text("User Details", 10, 30);
+        doc.setFontSize(14);
+        doc.text(`Name: ${userData?.rName}`, 10, 40);
+        doc.text(`Email: ${userData?.email}`, 10, 50);
+        doc.text(`Date of Birth: ${userData?.dob}`, 10, 60);
+        doc.text(`Phone Number: ${userData?.phone}`, 10, 70);
+    
+        // Family Members Section
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 100); // Dark blue color
+        doc.text("Family Members:", 10, 90);
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0); // Black color
+    
+        familyMembers.forEach((member, index) => {
+            const yPosition = 100 + (index * 30); // Increase spacing
+            doc.text(`- Name: ${member.name}`, 10, yPosition);
+            doc.text(`  Seat Preference: ${member.seatPreference}`, 10, yPosition + 10);
+            doc.text(`  Seat Number: ${member.seatNumber || 'Not Assigned'}`, 10, yPosition + 20);
+            
+            // Draw a line after each member for better separation
+            doc.line(10, yPosition + 25, 200, yPosition + 25); // Draw line
+        });
+    
+        // Save the document
         doc.save("user_details.pdf");
     };
 
@@ -193,8 +247,7 @@ const UserDetails: React.FC = () => {
         );
     }
 
-    const hasSeatNumbers = familyMembers.some(member => member.seatNumber);
-    const shouldShowAnnouncements = userData.isConfirmSeatBooking && hasSeatNumbers;
+   
 
     return (
         <Fade in={true}>
@@ -209,21 +262,31 @@ const UserDetails: React.FC = () => {
                     overflow: 'hidden',
                 }}
             >
-                <audio  ref={audioRef} src={announcementMusic} autoPlay loop style={{ display: 'none' }} /> Background music
+                <audio ref={audioRef} src={announcementMusic} autoPlay loop style={{ display: 'none' }} />
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                     <Typography variant="h4" gutterBottom textAlign="center">
                         User Details
                     </Typography>
-                    <IconButton onClick={handleDownloadPDF}>
-                        <PictureAsPdfIcon color="primary" />
-                    </IconButton>
+                      {/* PDF Icon */}
+                      {userData.isConfirmSeatBooking && !userData.isArchived && familyMembers.length > 0 && familyMembers.some(member => member.seatNumber) && (
+                        <IconButton onClick={handleDownloadPDF}>
+                            <PictureAsPdfIcon color="primary" />
+                        </IconButton>
+                    )}
                 </Box>
 
                 <Card variant="outlined" sx={{ marginBottom: 2 }}>
                     <CardContent>
-                        <Box display="flex" flexDirection="column" alignItems="center">
+                    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
                             <Typography variant="h5">{userData.rName}</Typography>
                             <Typography variant="subtitle1">{userData.email}</Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" justifyContent="center">
+                            <Avatar
+                                alt={userData.rName}
+                                src={userData.pic}
+                                sx={{ width: 100, height: 100, marginRight: 2 }}
+                            />
                         </Box>
                         <Divider sx={{ my: 2 }} />
                         <Typography variant="h6">Personal Information</Typography>
@@ -233,9 +296,29 @@ const UserDetails: React.FC = () => {
                         </Box>
                     </CardContent>
                 </Card>
+                <Box sx={{ marginBottom: 2, padding: 2, borderRadius: 1, backgroundColor: userData.isConfirmSeatBooking ? '#e8f5e9' : '#fff3e0' }}>
+                    <Typography variant="h6" textAlign="center" color={userData.isConfirmSeatBooking ? 'green' : 'orange'}>
+                        {!userData.isArchived && userData.isConfirmSeatBooking ? 'Approved' : null}
+                        {!userData.isArchived && !userData.isConfirmSeatBooking ? 'On Hold' : null}
+                    </Typography>
+                    {userData?.isArchived ? <Typography variant="h6" textAlign="center" color='red'>Cancelled</Typography> : null}
+                    <Typography textAlign="center">
+                        {!userData.isArchived && userData.isConfirmSeatBooking
+                            ? 'Welcome to Mahadev ke Dewane tour of 2k24 Mukutmanipur trip with itineraries of these days.'
+                            : null}
+                        {!userData.isArchived && userData.isConfirmSeatBooking
+                            ? 'Thank you for your request! Our team is currently reviewing it and will take action shortly. In the meantime, we appreciate your patience and encourage you to stay tuned for updates!'
+                            : null}
+                    </Typography>
+                    {userData.isArchived ?
+                        <Typography textAlign="center">
+                            We're sorry to inform you that your seat booking has been canceled.
+                        </Typography> : null}
+                </Box>
 
                 {shouldShowAnnouncements && (
                     <Box sx={{ marginBottom: 2 }}>
+                           <audio ref={audioRef} src={announcementMusic} autoPlay loop style={{ display: 'none' }} />
                         <Typography variant="h5" color="primary" textAlign="center">
                             Latest Announcements
                         </Typography>
