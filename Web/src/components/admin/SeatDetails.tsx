@@ -68,7 +68,7 @@ const SeatDetails: React.FC = () => {
         fetchSeats();
     }, []);
 
-    const handleOpen = (seat: any = { seatNumber: '', seatDetails: 'Window', seatStatus: true }) => {
+    const handleOpen = (seat?: any) => {
         setCurrentSeat(seat);
         setEditMode(!!seat.seatNumber);
         setOpen(true);

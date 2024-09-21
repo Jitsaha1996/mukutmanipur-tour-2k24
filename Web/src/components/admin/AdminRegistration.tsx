@@ -12,6 +12,8 @@ import {
     Paper,
     useTheme,
     styled,
+    Backdrop,
+    CircularProgress,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -36,8 +38,11 @@ const AdminRegistration: React.FC = () => {
     const theme = useTheme();
     const [users, setUsers] = useState<any[]>([]);
 
+    const [loading, setLoading] = useState<boolean>(true); // Loading state
+
     useEffect(() => {
         const fetchUsers = async () => {
+            setLoading(true); // Set loading to true when fetching starts
             try {
                 const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/');
                 if (!response.ok) throw new Error('Failed to fetch users');
@@ -45,6 +50,8 @@ const AdminRegistration: React.FC = () => {
                 setUsers(data);
             } catch (error) {
                 console.error('Error fetching users:', error);
+            } finally {
+                setLoading(false); // Set loading to false after fetching
             }
         };
 
@@ -194,6 +201,10 @@ const AdminRegistration: React.FC = () => {
                     </Table>
                 </Paper>
             </StyledTableContainer>
+            {/* Loader */}
+            <Backdrop open={loading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </Box>
     );
 };

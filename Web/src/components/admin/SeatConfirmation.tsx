@@ -133,7 +133,7 @@ const SeatConfirmation: React.FC = () => {
 
             setSnackbarMessage('Update successful!');
             setSnackbarOpen(true);
-            fetchActiveSeats();
+            // fetchActiveSeats();
 
             handleDialogClose();
         } catch (error) {
