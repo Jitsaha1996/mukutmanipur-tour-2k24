@@ -140,7 +140,7 @@ const SeatConfirmation: React.FC = () => {
                                 </StyledTableCell>
                             </TableRow>
                         ))}
-                    </TableBody>
+                    </TableBody>``````
                 </Table>
             </TableContainer>
 
