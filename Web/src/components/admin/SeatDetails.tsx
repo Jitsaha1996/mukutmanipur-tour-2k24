@@ -53,7 +53,7 @@ const SeatDetails: React.FC = () => {
     const [editMode, setEditMode] = useState(false);
     const [currentSeat, setCurrentSeat] = useState<any>({
         seatNumber: '',
-        seatDetails: 'Window',
+        seatDetails: '',
         seatStatus: true,
     });
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -160,7 +160,7 @@ const SeatDetails: React.FC = () => {
                                 <StyledTableCell>{`${seat.seatNumber} - ${seat.seatDetails}`}</StyledTableCell>
                                 <StyledTableCell>{seat.seatStatus ? 'Available' : 'Unavailable'}</StyledTableCell>
                                 <StyledTableCell align="right">
-                                    <IconButton onClick={() => handleOpen(seat)}>
+                                    <IconButton disabled={!seat?.seatStatus} onClick={() => handleOpen(seat)}>
                                         <EditIcon />
                                     </IconButton>
                                     <IconButton onClick={() => handleDeleteOpen(seat)} sx={{ color: 'red' }}>

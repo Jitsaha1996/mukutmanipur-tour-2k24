@@ -37,6 +37,58 @@ const createAnnouncement = asynHandler(async (req, res) => {
     }
 });
 
+  const updateAnnouncement = asynHandler(async (req, res) => {
+    const { announcementId, announcementDetails, announcementStatus } = req.body;
+    const announcementExist = await AnnounceMentModel.findOne({ announcementId })
+    const filter = { announcementId: announcementExist.announcementId };
+    const updateDocument = {
+      $set: {
+        announcementDetails: announcementDetails,
+        announcementStatus: announcementStatus,
+      },
+    };
+    const announcement = await AnnounceMentModel.updateOne(filter, updateDocument);
+    if (announcement) {
+      res.status(200).json({
+        message: `${announcementId} updated sucessfully!`,
+        status: "sucess",
+        statuscode: 200
+      })
+    } else {
+      res.status(400);
+      throw new Error("Error Occured");
+    }
+  });
+
+  const deleteAnnoucement = asynHandler(async (req, res) => {
+    const { announcementId } = req.params; // Assuming seatNumber is passed as a URL parameter
+    
+    // Check if the seat exists
+    const announcementExist = await AnnounceMentModel.findOne({ announcementId });
+    
+    if (!announcementExist) {
+      return res.status(404).json({
+        message: `Announcement number ${announcementId} not found.`,
+        status: "fail",
+        statuscode: 404,
+      });
+    }
+    
+    // Proceed to delete the seat
+    const announcementDelete = await AnnounceMentModel.deleteOne({ announcementId });
+  
+    if (announcementDelete.deletedCount === 1) {
+      res.status(200).json({
+        message: ` ${announcementId} deleted successfully!`,
+        status: "success",
+        statuscode: 200,
+      });
+    } else {
+      res.status(400);
+      throw new Error("Error occurred while deleting the announcement.");
+    }
+  });
+
 
 // const updateBulkSeats = asynHandler(async (req, res) => {
 //     const  seats  = req.body; // Expecting an array of seat updates
@@ -118,5 +170,5 @@ const createAnnouncement = asynHandler(async (req, res) => {
 //     res.json(note);
 //   });
 
-module.exports={getAllAnnounceMentDetails,createAnnouncement};
+module.exports={getAllAnnounceMentDetails,createAnnouncement,updateAnnouncement,deleteAnnoucement};
 

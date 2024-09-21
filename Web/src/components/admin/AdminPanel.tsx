@@ -11,6 +11,7 @@ import {
 import AdminRegistration from './AdminRegistration'; // Import the new component
 import SeatConfirmation from './SeatConfirmation';
 import SeatDetails from './SeatDetails';
+import Announcement from './Announcement';
 
 // Styled components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -65,7 +66,7 @@ const AdminPanel: React.FC = () => {
                     <StyledTab label="Registration" />
                     <StyledTab label="Seat Asigned" />
                     <StyledTab label="Seat Details" />
-                    <StyledTab label="Menu" />
+                    <StyledTab label="Announcements" />
                     <StyledTab label="Letsee" />
                 </Tabs>
             </StyledAppBar>
@@ -73,7 +74,7 @@ const AdminPanel: React.FC = () => {
                 {activeTab === 0 && <AdminRegistration />}
                 {activeTab === 1 && <Typography variant="h6"><SeatConfirmation/></Typography>}
                 {activeTab === 2 && <Typography variant="h6"><SeatDetails/></Typography>}
-                {activeTab === 3 && <Typography variant="h6">Menu Content</Typography>}
+                {activeTab === 3 && <Typography variant="h6"><Announcement/></Typography>}
                 {activeTab === 4 && <Typography variant="h6">Letsee Content</Typography>}
             </TabContent>
         </Box>

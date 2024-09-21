@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     Box,
@@ -15,16 +15,20 @@ import {
     FormControl,
     Select,
     MenuItem,
-    Fade
+    Fade,
+    Snackbar,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; // Import PDF icon
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; 
+import AnnouncementIcon from '@mui/icons-material/Announcement'; 
 import { IUser } from '../common/user';
 import { RootState } from '../redux/store';
 import { getFromLocalStorage } from '../redux/localStorage';
 import { setUser } from '../redux/userSlice';
 import { useNavigate } from 'react-router-dom';
-import jsPDF from 'jspdf'; // Import jsPDF
+import jsPDF from 'jspdf'; 
+import { motion } from 'framer-motion';
+import announcementMusic from '../assets/checkai.mp3'
 
 const seatPreferences = [
     'Window Seat',
@@ -37,12 +41,38 @@ const seatPreferences = [
 const UserDetails: React.FC = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    let userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
+    const userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
 
     const [isEditing, setIsEditing] = useState(false);
     const [numFamilyMembers, setNumFamilyMembers] = useState(0);
     const [familyMembers, setFamilyMembers] = useState(userData?.familyMembers || []);
     const [loading, setLoading] = useState(false);
+    const [announcements, setAnnouncements] = useState<any[]>([]);
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        // Play the audio
+        if (audioRef.current) {
+            audioRef.current.play();
+        }
+
+        // Stop the audio after 10 seconds (for example)
+        const timer = setTimeout(() => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0; // Optionally reset to the start
+            }
+        }, 10000); // Time in milliseconds (10 seconds)
+
+        return () => {
+            clearTimeout(timer); // Clear the timer on component unmount
+            if (audioRef.current) {
+                audioRef.current.pause(); // Ensure audio is paused
+            }
+        };
+    }, []);
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -58,9 +88,7 @@ const UserDetails: React.FC = () => {
                     });
 
                     if (!response.ok) throw new Error('Failed to fetch user data');
-
                     const userData = await response.json();
-
                     if (userData) {
                         dispatch(setUser(userData));
                         setFamilyMembers(userData.familyMembers);
@@ -72,7 +100,19 @@ const UserDetails: React.FC = () => {
             }
         };
 
+        const fetchAnnouncements = async () => {
+            try {
+                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/announcement/');
+                if (!response.ok) throw new Error('Failed to fetch announcements');
+                const data = await response.json();
+                setAnnouncements(data);
+            } catch (error) {
+                console.error("Error fetching announcements:", error);
+            }
+        };
+
         fetchUserData();
+        fetchAnnouncements();
     }, [dispatch]);
 
     const handleEditToggle = () => {
@@ -94,14 +134,13 @@ const UserDetails: React.FC = () => {
 
     const handleUpdate = async () => {
         setLoading(true);
-        // let resetSetNumbers = familyMembers?.map(item => item.seatNumber = "");
 
         try {
             const payload = {
                 ...userData,
                 familyMembers: familyMembers,
                 isConfirmSeatBooking: false,
-            }
+            };
             const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/edit', {
                 method: 'PUT',
                 headers: {
@@ -111,28 +150,7 @@ const UserDetails: React.FC = () => {
             });
 
             if (!response.ok) throw new Error('Failed to update family members');
-
             const updatedUserData = await response.json();
-            if (updatedUserData?.email) {
-                try {
-                    const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/users/email/${updatedUserData?.email}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    });
-
-                    if (!response.ok) throw new Error('Failed to fetch user data');
-
-                    const userDataresponse = await response.json();
-
-                    if (userDataresponse) {
-                        dispatch(setUser(userDataresponse));
-                    }
-                } catch (error) {
-                    console.error("Error fetching user data:", error);
-                }
-            }
             dispatch(setUser(updatedUserData));
             setIsEditing(false);
         } catch (error) {
@@ -144,43 +162,12 @@ const UserDetails: React.FC = () => {
 
     const handleDownloadPDF = () => {
         const doc = new jsPDF();
-    
-        // Title
-        doc.setFontSize(24);
-        doc.setTextColor(40, 40, 200); // Blue color
-        doc.text("Mahadev ka Dewane Trip to Mukutmanipur 2k24", 10, 10);
-    
-        // User Details
-        doc.setFontSize(20);
-        doc.setTextColor(0, 0, 0); // Black color
-        doc.text("User Details", 10, 30);
-        doc.setFontSize(14);
-        doc.text(`Name: ${userData?.rName}`, 10, 40);
-        doc.text(`Email: ${userData?.email}`, 10, 50);
-        doc.text(`Date of Birth: ${userData?.dob}`, 10, 60);
-        doc.text(`Phone Number: ${userData?.phone}`, 10, 70);
-    
-        // Family Members Section
-        doc.setFontSize(16);
-        doc.setTextColor(0, 0, 100); // Dark blue color
-        doc.text("Family Members:", 10, 90);
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0); // Black color
-    
-        familyMembers.forEach((member, index) => {
-            const yPosition = 100 + (index * 30); // Increase spacing
-            doc.text(`- Name: ${member.name}`, 10, yPosition);
-            doc.text(`  Seat Preference: ${member.seatPreference}`, 10, yPosition + 10);
-            doc.text(`  Seat Number: ${member.seatNumber || 'Not Assigned'}`, 10, yPosition + 20);
-            
-            // Draw a line after each member for better separation
-            doc.line(10, yPosition + 25, 200, yPosition + 25); // Draw line
-        });
-    
-        // Save the document
         doc.save("user_details.pdf");
     };
-    
+
+    const handleAnnouncementClick = () => {
+        setOpenSnackbar(true);
+    };
 
     if (!userData) {
         return (
@@ -206,6 +193,9 @@ const UserDetails: React.FC = () => {
         );
     }
 
+    const hasSeatNumbers = familyMembers.some(member => member.seatNumber);
+    const shouldShowAnnouncements = userData.isConfirmSeatBooking && hasSeatNumbers;
+
     return (
         <Fade in={true}>
             <Box
@@ -219,30 +209,21 @@ const UserDetails: React.FC = () => {
                     overflow: 'hidden',
                 }}
             >
+                <audio  ref={audioRef} src={announcementMusic} autoPlay loop style={{ display: 'none' }} /> Background music
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                     <Typography variant="h4" gutterBottom textAlign="center">
                         User Details
                     </Typography>
-                    {/* PDF Icon */}
-                    {userData.isConfirmSeatBooking && !userData.isArchived && familyMembers.length > 0 && familyMembers.some(member => member.seatNumber) && (
-                        <IconButton onClick={handleDownloadPDF}>
-                            <PictureAsPdfIcon color="primary" />
-                        </IconButton>
-                    )}
+                    <IconButton onClick={handleDownloadPDF}>
+                        <PictureAsPdfIcon color="primary" />
+                    </IconButton>
                 </Box>
 
                 <Card variant="outlined" sx={{ marginBottom: 2 }}>
                     <CardContent>
-                        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+                        <Box display="flex" flexDirection="column" alignItems="center">
                             <Typography variant="h5">{userData.rName}</Typography>
                             <Typography variant="subtitle1">{userData.email}</Typography>
-                        </Box>
-                        <Box display="flex" alignItems="center" justifyContent="center">
-                            <Avatar
-                                alt={userData.rName}
-                                src={userData.pic}
-                                sx={{ width: 100, height: 100, marginRight: 2 }}
-                            />
                         </Box>
                         <Divider sx={{ my: 2 }} />
                         <Typography variant="h6">Personal Information</Typography>
@@ -253,25 +234,32 @@ const UserDetails: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                <Box sx={{ marginBottom: 2, padding: 2, borderRadius: 1, backgroundColor: userData.isConfirmSeatBooking ? '#e8f5e9' : '#fff3e0' }}>
-                    <Typography variant="h6" textAlign="center" color={userData.isConfirmSeatBooking ? 'green' : 'orange'}>
-                        { !userData.isArchived && userData.isConfirmSeatBooking ? 'Approved' : null}
-                        { !userData.isArchived && !userData.isConfirmSeatBooking ? 'On Hold' : null}
-                    </Typography>
-                    {userData?.isArchived?<Typography variant="h6" textAlign="center" color='red'>Cancelled</Typography>:null}
-                    <Typography textAlign="center">
-                        {!userData.isArchived && userData.isConfirmSeatBooking
-                            ? 'Welcome to Mahadev ke Dewane tour of 2k24 Mukutmanipur trip with itineraries of these days.'
-                            : null}
-                        {!userData.isArchived && userData.isConfirmSeatBooking
-                            ? 'Thank you for your request! Our team is currently reviewing it and will take action shortly. In the meantime, we appreciate your patience and encourage you to stay tuned for updates!'
-                            : null}
-                    </Typography>
-                    {userData.isArchived ?
-                    <Typography textAlign="center">
-                        We're sorry to inform you that your seat booking has been canceled.
-                    </Typography> : null}
-                </Box>
+                {shouldShowAnnouncements && (
+                    <Box sx={{ marginBottom: 2 }}>
+                        <Typography variant="h5" color="primary" textAlign="center">
+                            Latest Announcements
+                        </Typography>
+                        <Grid container spacing={2}>
+                            {announcements.map((announcement, index) => (
+                                <Grid item xs={12} sm={6} md={4} key={index}>
+                                    <motion.div
+                                        initial={{ opacity: 0, translateY: 20 }}
+                                        animate={{ opacity: 1, translateY: 0 }}
+                                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                                    >
+                                        <Card variant="outlined" sx={{ padding: 2, textAlign: 'center' }}>
+                                            <Typography variant="h6">{announcement.announcementId}</Typography>
+                                            <Typography variant="body2">{announcement.announcementDetails}</Typography>
+                                        </Card>
+                                    </motion.div>
+                                </Grid>
+                            ))}
+                        </Grid>
+                        <IconButton onClick={handleAnnouncementClick}>
+                            <AnnouncementIcon color="secondary" fontSize="large" />
+                        </IconButton>
+                    </Box>
+                )}
 
                 <Card variant="outlined">
                     <CardContent>
@@ -341,10 +329,11 @@ const UserDetails: React.FC = () => {
                                             <Card elevation={1} sx={{ padding: 2, textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.05)' } }}>
                                                 <Typography><strong>Name:</strong> {member.name}</Typography>
                                                 <Typography><strong>Seat Preference:</strong> {member.seatPreference}</Typography>
-                                                {userData?.isConfirmSeatBooking && member?.seatNumber ?
-                                                 <Typography><strong>Seat Number:</strong> {member.seatNumber}</Typography> : null}
-                                                 {userData?.isConfirmSeatBooking && !member?.seatNumber ?
-                                                 <Typography><strong>Seat Number:</strong> Yet to Assign</Typography> : null}
+                                                {userData?.isConfirmSeatBooking && member?.seatNumber ? (
+                                                    <Typography><strong>Seat Number:</strong> {member.seatNumber}</Typography>
+                                                ) : (
+                                                    <Typography><strong>Seat Number:</strong> Yet to Assign</Typography>
+                                                )}
                                             </Card>
                                         </Fade>
                                     </Grid>
@@ -353,6 +342,13 @@ const UserDetails: React.FC = () => {
                         </Grid>
                     </CardContent>
                 </Card>
+
+                <Snackbar
+                    open={openSnackbar}
+                    onClose={() => setOpenSnackbar(false)}
+                    message="Announcement made!"
+                    autoHideDuration={3000}
+                />
             </Box>
         </Fade>
     );
