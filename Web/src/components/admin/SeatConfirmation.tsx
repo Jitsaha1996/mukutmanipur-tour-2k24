@@ -61,7 +61,7 @@ const SeatConfirmation: React.FC = () => {
     const [activeSeats, setActiveSeats] = useState<any[]>([]);
     const fetchActiveSeats = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/busseatdetals/');
+            const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/');
             if (!response.ok) throw new Error('Failed to fetch active seats');
             const data = await response.json();
             const filteredSeats = data.filter((seat: any) => seat.seatStatus === true);
@@ -121,7 +121,7 @@ const SeatConfirmation: React.FC = () => {
                 seatStatus: false,
             }));
 
-            const bulkUpdateResponse = await fetch('http://localhost:5000/api/busseatdetals/bulkupdates', {
+            const bulkUpdateResponse = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/bulkupdates', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ const SeatConfirmation: React.FC = () => {
             setSnackbarMessage('Update successful!');
             setSnackbarOpen(true);
             fetchActiveSeats();
-            
+
             handleDialogClose();
         } catch (error) {
             console.error('Error updating user:', error);

@@ -62,7 +62,7 @@ const AdminRegistration: React.FC = () => {
 
         if (seatUpdates.length > 0) {
             try {
-                const response = await fetch('http://localhost:5000/api/busseatdetals/bulkupdates', {
+                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/bulkupdates', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
