@@ -1,36 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import {
     Box,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
+    Grid,
+    Typography,
     Button,
     Modal,
     TextField,
-    Typography,
     Backdrop,
     CircularProgress,
     IconButton,
+    Pagination,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Fade from '@mui/material/Fade';
 import EditIcon from '@mui/icons-material/Edit';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    textAlign: 'center',
-    transition: 'all 0.3s ease',
-    '&:hover': {
-        backgroundColor: theme.palette.action.hover,
-    },
-}));
-
-const PaymentCell = styled(TableCell)(({ type }: { type: string }) => ({
+const PaymentCell = styled(Box)(({ type }: { type: string }) => ({
     textAlign: 'center',
     fontWeight: 'bold',
     color: type === 'expected' ? 'orange' : type === 'paid' ? 'green' : 'red',
+    transition: 'color 0.3s',
+}));
+
+const UserCard = styled(Box)(({ theme }) => ({
+    border: '1px solid #ccc',
+    borderRadius: 8,
+    padding: 16,
+    position: 'relative',
+    transition: 'transform 0.3s, box-shadow 0.3s',
+    '&:hover': {
+        transform: 'scale(1.02)',
+        boxShadow: theme.shadows[3],
+    },
 }));
 
 const UserPayment: React.FC = () => {
@@ -39,14 +40,19 @@ const UserPayment: React.FC = () => {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [paid, setPaid] = useState<string>('');
+    const [page, setPage] = useState<number>(1);
+    const itemsPerPage = 6;
 
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://localhost:5000/api/users');
+                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users');
                 const data = await response.json();
-                setUsers(data);
+                
+                // Filter users with isConfirmSeatBooking set to true
+                const confirmedUsers = data.filter((user: any) => user.isConfirmSeatBooking);
+                setUsers(confirmedUsers);
             } catch (error) {
                 console.error('Error fetching users:', error);
             } finally {
@@ -59,7 +65,7 @@ const UserPayment: React.FC = () => {
 
     const handleEditClick = (user: any) => {
         setSelectedUser(user);
-        setPaid(user.familyWiseCost.paid || '');
+        setPaid(user?.familyWiseCost?.paid || '');
         setModalOpen(true);
     };
 
@@ -77,7 +83,7 @@ const UserPayment: React.FC = () => {
             };
 
             try {
-                const response = await fetch('http://localhost:5000/api/users/paymentinfo', {
+                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/paymentinfo', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -86,10 +92,13 @@ const UserPayment: React.FC = () => {
                 });
 
                 if (!response.ok) throw new Error('Failed to update payment info');
-                // Refetch users after updating
-                const updatedResponse = await fetch('http://localhost:5000/api/users');
+                
+                const updatedResponse = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users');
                 const updatedData = await updatedResponse.json();
-                setUsers(updatedData);
+                
+                // Filter again after updating to reflect changes
+                const confirmedUsers = updatedData.filter((user: any) => user.isConfirmSeatBooking);
+                setUsers(confirmedUsers);
             } catch (error) {
                 console.error('Error updating payment info:', error);
             } finally {
@@ -97,6 +106,14 @@ const UserPayment: React.FC = () => {
             }
         }
     };
+
+    const handleChangePage = (event: React.ChangeEvent<unknown>, value: number) => {
+        setPage(value);
+    };
+
+    // Calculate users for the current page
+    const startIndex = (page - 1) * itemsPerPage;
+    const currentUsers = users.slice(startIndex, startIndex + itemsPerPage);
 
     return (
         <Box sx={{ padding: 3 }}>
@@ -106,36 +123,39 @@ const UserPayment: React.FC = () => {
                     <CircularProgress color="inherit" />
                 </Backdrop>
             ) : (
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <StyledTableCell>Name (Email)</StyledTableCell>
-                                <StyledTableCell>Family Members</StyledTableCell>
-                                <StyledTableCell>Payment Details</StyledTableCell>
-                                <StyledTableCell>Edit</StyledTableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {users.map((user) => (
-                                <TableRow key={user.email}>
-                                    <StyledTableCell>{`${user.rName} (${user.email})`}</StyledTableCell>
-                                    <StyledTableCell>{user.familyMembers.length}</StyledTableCell>
+                <>
+                    <Grid container spacing={2}>
+                        {currentUsers.map((user) => (
+                            <Grid item xs={12} sm={6} md={4} key={user.email}>
+                                <UserCard>
+                                    <Typography variant="h6">{`${user.rName} (${user.email})`}</Typography>
+                                    <Typography variant="body1">Family Members: {user.familyMembers.length}</Typography>
                                     <PaymentCell type="expected">
-                                        {user.familyMembers.length * 1200}
+                                        Expected: {user.familyMembers.length * 1200}
                                     </PaymentCell>
-                                    <PaymentCell type="paid">{user.familyWiseCost.paid}</PaymentCell>
-                                    <PaymentCell type="due">{user.familyWiseCost.due}</PaymentCell>
-                                    <StyledTableCell>
-                                        <IconButton onClick={() => handleEditClick(user)}>
-                                            <EditIcon color="primary" />
-                                        </IconButton>
-                                    </StyledTableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                                    <PaymentCell type="paid">Paid: {user?.familyWiseCost?.paid}</PaymentCell>
+                                    <PaymentCell type="due">Due: {user?.familyWiseCost?.due}</PaymentCell>
+                                    <IconButton
+                                        onClick={() => handleEditClick(user)}
+                                        sx={{ position: 'absolute', top: 10, right: 10 }}
+                                    >
+                                        <EditIcon color="primary" />
+                                    </IconButton>
+                                </UserCard>
+                            </Grid>
+                        ))}
+                    </Grid>
+
+                    {/* Pagination Component */}
+                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+                        <Pagination
+                            count={Math.ceil(users.length / itemsPerPage)}
+                            page={page}
+                            onChange={handleChangePage}
+                            color="primary"
+                        />
+                    </Box>
+                </>
             )}
 
             <Modal
