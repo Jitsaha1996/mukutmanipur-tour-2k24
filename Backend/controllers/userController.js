@@ -79,6 +79,55 @@ const editUsers = asynHandler(async (req, res) => {
 
 })
 
+const paymentInfoForFamilyWidse = asynHandler(async (req, res) => {
+  const { email ,payment} = req.body;
+  const userExist = await User.findOne({ email })
+  const filter = { email: userExist.email };
+  console.log("Filter1", userExist);
+  // if (userExist) {
+  //   res.status(400);
+  //   throw new Error("User Already Exist");
+  // }
+
+  if (!userExist) {
+    res.status(404);
+    throw new Error("User not found");
+}
+
+const familymemberLength= userExist.familyMembers.length;
+
+const familyWiseCost={
+  expectedCost: (familymemberLength * 1200).toString(),
+  paid: payment,
+  due: ((familymemberLength * 1200) -parseInt(payment)).toString()
+}
+
+
+
+  const updateDocument = {
+    $set: {
+      familyWiseCost:familyWiseCost
+
+
+    },
+  };
+  const user = await User.updateOne(filter, updateDocument);
+  console.log("User", user);
+  if (user) {
+    res.status(200).json({
+      message: `${email} updated sucessfully !!`,
+      status: "sucess",
+      email:email,
+      statuscode: 200
+    })
+  } else {
+    res.status(400);
+    throw new Error("Error Occured");
+  }
+
+
+})
+
 const authUsers = asynHandler(async (req, res) => {
   const { email, password } = req.body;//desturctaring
 
@@ -139,7 +188,9 @@ const getUserByEmail = asynHandler(async (req, res) => {
       isArchived: user.isArchived,
       pic: user.pic,
       dob: user.dob,
-      phone: user.phone
+      phone: user.phone,
+      familyWiseCost: user.familyWiseCost
+
   });
 });
-module.exports = { registerUsers, authUsers, getUserList, editUsers , getUserByEmail };
+module.exports = { registerUsers, authUsers, getUserList, editUsers , getUserByEmail ,paymentInfoForFamilyWidse};

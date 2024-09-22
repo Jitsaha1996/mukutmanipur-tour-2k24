@@ -23,6 +23,8 @@ const userRoutes = require('./routes/userRoutes');
 const workoutRoutes = require('./routes/workoutRoutes');
 const busSeatRoutes = require('./routes/busSeatRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
+const budgetRoutes = require('./routes/budgetRoutes');
+budgetRoutes
 const { notFound, errorHandler } = require('./middlewares/errorMiddleware');
 dotenv.config();
 connectDb();
@@ -32,6 +34,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/workouts', workoutRoutes);
 app.use('/api/busseatdetals', busSeatRoutes);
 app.use('/api/announcement', announcementRoutes);
+app.use('/api/budget', budgetRoutes);
 
 
 app.use(notFound);

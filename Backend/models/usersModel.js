@@ -63,6 +63,20 @@ const userSchema = mongoose.Schema(
         },
       },
     ],
+    familyWiseCost:{
+      expectedCost:{
+        type:String,
+        required:false
+      },
+      paid:{
+        type:String,
+        required:false
+      },
+      due:{
+        type:String,
+        required:false
+      },
+    }
   },
   {
     timestamps: true,
