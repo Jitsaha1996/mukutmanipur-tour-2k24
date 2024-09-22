@@ -20,6 +20,8 @@ import {
     styled,
     TableContainer,
     MenuItem,
+    Backdrop,
+    CircularProgress,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -59,7 +61,10 @@ const SeatConfirmation: React.FC = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [activeSeats, setActiveSeats] = useState<any[]>([]);
+    const [loading, setLoading] = useState<boolean>(true); // Loading state
     const fetchActiveSeats = async () => {
+        setLoading(true);
+      
         try {
             const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/');
             if (!response.ok) throw new Error('Failed to fetch active seats');
@@ -69,9 +74,14 @@ const SeatConfirmation: React.FC = () => {
         } catch (error) {
             console.error('Error fetching active seats:', error);
         }
+        finally{
+            setLoading(false);
+        }
     };
     useEffect(() => {
+        
         const fetchUsers = async () => {
+            
             try {
                 const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/');
                 if (!response.ok) throw new Error('Failed to fetch users');
@@ -102,8 +112,9 @@ const SeatConfirmation: React.FC = () => {
     };
 
     const handleUpdate = async () => {
+        
         if (!selectedUser) return;
-
+        
         try {
             const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/edit', {
                 method: 'PUT',
@@ -122,7 +133,9 @@ const SeatConfirmation: React.FC = () => {
             }));
 
             const bulkUpdateResponse = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/bulkupdates', {
+               
                 method: 'PUT',
+                
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -233,8 +246,14 @@ const SeatConfirmation: React.FC = () => {
                 onClose={() => setSnackbarOpen(false)}
                 message={snackbarMessage}
             />
+            <Backdrop open={loading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </Box>
     );
 };
 
 export default SeatConfirmation;
+
+
+
