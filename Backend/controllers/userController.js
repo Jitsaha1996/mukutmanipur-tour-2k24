@@ -158,10 +158,20 @@ const authUsers = asynHandler(async (req, res) => {
 
 })
 const getUserList = asynHandler(async (req, res) => {
+  try {
+    const userList = await User.find().select('rName email isAdmin isConfirmSeatBooking isArchived familyMembers familyWiseCost');
+    
+    // If no users found, respond with 204 No Content
+    if (!userList.length) {
+      return res.status(204).json({ message: 'No users found' });
+    }
 
-  const userList = await User.find();
-  res.json(userList);
-})
+    res.status(200).json(userList);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 
 const getUserByEmail = asynHandler(async (req, res) => {
   const { email } = req.params;
