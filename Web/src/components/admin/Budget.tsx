@@ -69,7 +69,7 @@ const Budget: React.FC = () => {
             setLoading(false);
         }
     };
-     
+
     const fetchExpenses = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/budget/`);
@@ -107,10 +107,10 @@ const Budget: React.FC = () => {
         setModalOpen(false);
         setExpense({ id: '', name: '', amount: '' });
     };
-   
+
     const handleAddOrUpdateExpense = async () => {
         const method = isEditing ? 'PUT' : 'POST';
-        const url = isEditing ?  `${process.env.REACT_APP_API_URL}/api/budget/update` :  `${process.env.REACT_APP_API_URL}/api/budget/create`;
+        const url = isEditing ? `${process.env.REACT_APP_API_URL}/api/budget/update` : `${process.env.REACT_APP_API_URL}/api/budget/create`;
         const payload = {
             expensesId: expense.id || Date.now().toString(),
             expensesDeatils: expense.name,
@@ -132,8 +132,8 @@ const Budget: React.FC = () => {
 
     const handleDeleteExpense = async (id: string) => {
         try {
-          
-            await fetch(`${process.env.REACT_APP_API_URL}/api/budget/delete/${id}`, { method: 'DELETE' });
+
+            await fetch(`${process.env.REACT_APP_API_URL}/api/budget/delete/${id}`, { method: 'GET' });
             fetchExpenses();
         } catch (error) {
             console.error('Error deleting expense:', error);
@@ -213,10 +213,10 @@ const Budget: React.FC = () => {
                                         <TableCell align="right">{expense.expensesValue}</TableCell>
                                         <TableCell align="right">
                                             <ActionButton color="primary" onClick={() => handleOpenModal(expense)} startIcon={<EditIcon />}>
-                                                Edit
+
                                             </ActionButton>
                                             <ActionButton color="error" onClick={() => handleDeleteExpense(expense.expensesId)} startIcon={<DeleteIcon />}>
-                                                Delete
+
                                             </ActionButton>
                                         </TableCell>
                                     </TableRow>

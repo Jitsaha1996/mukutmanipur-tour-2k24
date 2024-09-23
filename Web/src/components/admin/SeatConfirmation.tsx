@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {  useEffect, useState } from 'react';
 import {
     Box,
     Typography,
@@ -40,7 +40,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 
 interface FamilyMember {
     name: string;
-    seatPreference: string;
+    seatDetails: string;
     seatNumber?: string;
 }
 
@@ -95,7 +95,7 @@ const SeatConfirmation: React.FC = () => {
                 if (!response.ok) throw new Error('Failed to fetch users');
                 const data = await response.json();
                 const filteredUsers = data.filter(
-                    (user: IUser) => (user.isConfirmSeatBooking && !user.isArchived) && user?.familyWiseCost?.paid!==""
+                    (user: IUser) => (user.isConfirmSeatBooking && !user.isArchived) &&   user.hasOwnProperty("familyWiseCost") && user?.familyWiseCost?.paid!==" "
                 );
                 setUsers(filteredUsers);
             } catch (error) {
@@ -136,7 +136,7 @@ const SeatConfirmation: React.FC = () => {
 
             const bulkUpdatePayload = selectedUser.familyMembers.map(member => ({
                 seatNumber: member.seatNumber,
-                seatDetails: member.seatPreference,
+                seatDetails: member.seatDetails,
                 seatStatus: false,
             }));
 
@@ -212,7 +212,7 @@ const SeatConfirmation: React.FC = () => {
                             />
                             <TextField
                                 label="Seat Preference"
-                                value={member.seatPreference}
+                                value={member.seatDetails}
                                 disabled
                                 fullWidth
                                 margin="normal"
