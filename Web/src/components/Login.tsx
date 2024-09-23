@@ -20,10 +20,13 @@ import { RootState } from '../redux/store';
 import { IUser } from '../common/user';
 
 const Login: React.FC = () => {
-    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false); // Loading state
+    const [loading, setLoading] = useState(false);
+    const [isForgetPassword, setIsForgetPassword] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const theme = useTheme();
@@ -31,7 +34,7 @@ const Login: React.FC = () => {
     const [toasterMessage, setToasterMessage] = useState('');
     const [toasterSeverity, setToasterSeverity] = useState<'success' | 'error'>('success');
     const userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
-    
+
     useEffect(() => {
         if (userData) {
             navigate("/user-details");
@@ -45,7 +48,7 @@ const Login: React.FC = () => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setLoading(true); // Start loading
+        setLoading(true);
 
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/login`, {
@@ -53,32 +56,73 @@ const Login: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ phone, password }),
             });
 
             if (!response.ok) {
-                setToasterMessage("Invalid Password");
+                setToasterMessage("Invalid phone number or password");
                 setToasterSeverity('error');
                 setToasterOpen(true);
-                throw new Error('Invalid email or password');
+                throw new Error('Invalid phone number or password');
             }
-        
-            // Handle successful login here
+
             const data = await response.json();
             dispatch(setUser(data));
             setToasterMessage("Login successful!");
             setToasterSeverity('success');
             setToasterOpen(true);
 
-            // Use a timeout to delay the navigation so that toaster can show
             setTimeout(() => {
-                setLoading(false); // Stop loading
+                setLoading(false);
                 navigate('/user-details');
-            }, 1500); // Adjust the delay as needed
-            
+            }, 1500);
+
         } catch (err: any) {
             setError(err.message);
-            setLoading(false); // Stop loading on error
+            setLoading(false);
+        }
+    };
+
+    const handleForgetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/forgetpassword`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ phone, newPassword }),
+            });
+
+            if (!response.ok) {
+                setToasterMessage("Error updating password");
+                setToasterSeverity('error');
+                setToasterOpen(true);
+                throw new Error('Error updating password');
+            }
+
+            setToasterMessage("Password changed successfully!");
+            setToasterSeverity('success');
+            setToasterOpen(true);
+
+            setTimeout(() => {
+                setIsForgetPassword(false);
+                setLoading(false);
+                navigate('/login'); // Redirect to login page
+            }, 1500);
+
+        } catch (err: any) {
+            setError(err.message);
+            setLoading(false);
         }
     };
 
@@ -102,43 +146,94 @@ const Login: React.FC = () => {
                     <LockIcon />
                 </Avatar>
                 <Typography variant="h5" component="h1" textAlign="center">
-                    Login
+                    {isForgetPassword ? 'Reset Password' : 'Login'}
                 </Typography>
                 {error && (
                     <Typography color="error" textAlign="center" sx={{ mb: 2 }}>
                         {error}
                     </Typography>
                 )}
-                <Box component="form" onSubmit={handleLogin} sx={{ mt: 2 }}>
-                    <TextField
-                        label="Email Address"
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        disabled={loading} // Disable input when loading
-                        sx={{
-                            transition: '0.3s',
-                            '&:hover': { transform: 'scale(1.02)' },
-                        }}
-                    />
-                    <TextField
-                        label="Password"
-                        type="password"
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        disabled={loading} // Disable input when loading
-                        sx={{
-                            transition: '0.3s',
-                            '&:hover': { transform: 'scale(1.02)' },
-                        }}
-                    />
+                <Box component="form" onSubmit={isForgetPassword ? handleForgetPassword : handleLogin} sx={{ mt: 2 }}>
+                    {isForgetPassword ? (
+                        <>
+                            <TextField
+                                label="Phone Number"
+                                fullWidth
+                                margin="normal"
+                                variant="outlined"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                required
+                                disabled={loading}
+                                sx={{
+                                    transition: '0.3s',
+                                    '&:hover': { transform: 'scale(1.02)' },
+                                }}
+                            />
+                            <TextField
+                                label="New Password"
+                                type="password"
+                                fullWidth
+                                margin="normal"
+                                variant="outlined"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                required
+                                disabled={loading}
+                                sx={{
+                                    transition: '0.3s',
+                                    '&:hover': { transform: 'scale(1.02)' },
+                                }}
+                            />
+                            <TextField
+                                label="Confirm New Password"
+                                type="password"
+                                fullWidth
+                                margin="normal"
+                                variant="outlined"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                disabled={loading}
+                                sx={{
+                                    transition: '0.3s',
+                                    '&:hover': { transform: 'scale(1.02)' },
+                                }}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <TextField
+                                label="Phone Number"
+                                fullWidth
+                                margin="normal"
+                                variant="outlined"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                required
+                                disabled={loading}
+                                sx={{
+                                    transition: '0.3s',
+                                    '&:hover': { transform: 'scale(1.02)' },
+                                }}
+                            />
+                            <TextField
+                                label="Password"
+                                type="password"
+                                fullWidth
+                                margin="normal"
+                                variant="outlined"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                disabled={loading}
+                                sx={{
+                                    transition: '0.3s',
+                                    '&:hover': { transform: 'scale(1.02)' },
+                                }}
+                            />
+                        </>
+                    )}
                     <Button
                         type="submit"
                         variant="contained"
@@ -151,19 +246,38 @@ const Login: React.FC = () => {
                                 transform: 'scale(1.05)',
                             },
                         }}
-                        disabled={loading} // Disable button when loading
+                        disabled={loading}
                     >
-                        {loading ? <CircularProgress size={24} /> : 'Login'}
+                        {loading ? <CircularProgress size={24} /> : (isForgetPassword ? 'Reset Password' : 'Login')}
                     </Button>
                 </Box>
                 <Grid container justifyContent="flex-end" sx={{ mt: 2 }}>
                     <Grid item>
+                        {isForgetPassword ? (
+                            <Typography variant="body2">
+                                Remembered your password?{' '}
+                                <Button onClick={() => setIsForgetPassword(false)} color="primary">
+                                    Login
+                                </Button>
+                            </Typography>
+                        ) : (
+                            <>
+                             <Typography variant="body2">
+                                Forgot your password?{' '}
+                                <Button onClick={() => setIsForgetPassword(true)} color="primary">
+                                    Reset
+                                </Button>
+                            </Typography>
                         <Typography variant="body2">
-                            Don't have an account?{' '}
-                            <Button onClick={() => navigate('/register')} color="primary">
-                                Register
-                            </Button>
-                        </Typography>
+                        Don't have an account?{' '}
+                        <Button onClick={() => navigate('/register')} color="primary">
+                            Register
+                        </Button>
+                    </Typography>
+                            </>
+                           
+                            
+                        )}
                     </Grid>
                 </Grid>
             </Paper>

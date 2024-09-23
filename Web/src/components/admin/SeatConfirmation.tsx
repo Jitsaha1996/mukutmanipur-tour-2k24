@@ -40,7 +40,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 
 interface FamilyMember {
     name: string;
-    seatDetails: string;
+    seatPreference: string;
     seatNumber?: string;
 }
 
@@ -136,7 +136,7 @@ const SeatConfirmation: React.FC = () => {
 
             const bulkUpdatePayload = selectedUser.familyMembers.map(member => ({
                 seatNumber: member.seatNumber,
-                seatDetails: member.seatDetails,
+                seatDetails: member.seatPreference,
                 seatStatus: false,
             }));
 
@@ -212,7 +212,7 @@ const SeatConfirmation: React.FC = () => {
                             />
                             <TextField
                                 label="Seat Preference"
-                                value={member.seatDetails}
+                                value={member.seatPreference}
                                 disabled
                                 fullWidth
                                 margin="normal"

@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Container } from '@mui/material';
 import { styled } from '@mui/system';
 import picture from '../assets/test2.jpg';
 
 // Styled components
 const BackgroundContainer = styled(Box)(({ theme }) => ({
-    backgroundImage: `url('../assets/mukut1.jpg')`, // Replace with your image path
+    backgroundImage: `url('../assets/mukut1.jpg')`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
-    backgroundAttachment: 'fixed', // Keeps the background fixed during scroll
+    backgroundAttachment: 'fixed',
     height: '100vh',
     display: 'flex',
     alignItems: 'center',
@@ -47,31 +47,62 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
 }));
 
 const Home: React.FC = () => {
+    const [countdown, setCountdown] = useState<string>('');
+
+    useEffect(() => {
+        const targetDate = new Date('2024-12-28T00:00:00');
+        
+        const updateCountdown = () => {
+            const now = new Date();
+            const difference = targetDate.getTime() - now.getTime();
+            
+            if (difference > 0) {
+                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                if (days > 0) {
+                    setCountdown(`${days} Days Remaining`);
+                } else {
+                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                    setCountdown(`${hours}h ${minutes}m ${seconds}s`);
+                }
+            } else {
+                setCountdown('The event has started!');
+            }
+        };
+
+        const timer = setInterval(updateCountdown, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
     return (
         <BackgroundContainer sx={{
-          backgroundImage: `url(${picture})`, // Adjust the path as needed
+          backgroundImage: `url(${picture})`, 
           backgroundRepeat: 'no-repeat',
           backgroundAttachment: 'fixed',
       }}>
             <Container>
                 <Content>
-                    <Typography variant="h2" gutterBottom>
+                    <Typography variant="h2" sx={{fontFamily:'Croissant One'}} gutterBottom>
                         Welcome to the Night to Night Picnic!
                     </Typography>
-                    <Typography variant="h5" paragraph>
+                    <Typography variant="h5" sx={{fontFamily:'Times New Roman'}} paragraph>
                         Join us for an unforgettable experience in Mukutmanipur from <strong>December 28th, 2024</strong> to <strong>December 29th, 2024</strong>.
                     </Typography>
                     <Typography variant="body1" paragraph>
                         Our main goal is to create beautiful memories under the stars with friends, family, and nature.
+                    </Typography>
+                    <Typography variant="h6" sx={{ margin: '20px 0' }}>
+                        Countdown: {countdown}
                     </Typography>
                     <AnimatedButton
                         variant="contained"
                         color="secondary"
                         size="large"
                         sx={{ marginTop: 2 }}
-                        onClick={() => alert('More details coming soon!')} // Replace with actual navigation
+                        onClick={() => alert('More details coming soon!')}
                     >
-                        Learn More
+                        Explore More
                     </AnimatedButton>
                 </Content>
             </Container>

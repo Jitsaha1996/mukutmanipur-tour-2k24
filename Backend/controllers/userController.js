@@ -79,6 +79,29 @@ const editUsers = asynHandler(async (req, res) => {
 
 })
 
+const forgetpasswords = asynHandler(async (req, res) => {
+  const { phone, newPassword } = req.body;
+
+  // Find the user by phone number
+  const userExist = await User.findOne({ phone });
+  
+  if (!userExist) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  // Directly update the password without hashing
+  userExist.password = newPassword; // Set new password directly
+  await userExist.save(); // Save the user document
+
+  res.status(200).json({
+    message: `${phone} updated successfully!`,
+    status: "success",
+    statusCode: 200
+  });
+});
+
+
 const paymentInfoForFamilyWidse = asynHandler(async (req, res) => {
   const { email ,payment} = req.body;
   const userExist = await User.findOne({ email })
@@ -129,11 +152,12 @@ const familyWiseCost={
 })
 
 const authUsers = asynHandler(async (req, res) => {
-  const { email, password } = req.body;//desturctaring
+  const { phone, password } = req.body;//desturctaring
 
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ phone });
   const res1 = await user.matchPassword(password);
+  console.log("res1",res1);
 
 
   if (user && res1) {
@@ -203,4 +227,4 @@ const getUserByEmail = asynHandler(async (req, res) => {
 
   });
 });
-module.exports = { registerUsers, authUsers, getUserList, editUsers , getUserByEmail ,paymentInfoForFamilyWidse};
+module.exports = { registerUsers, authUsers, getUserList, editUsers , getUserByEmail ,paymentInfoForFamilyWidse,forgetpasswords};

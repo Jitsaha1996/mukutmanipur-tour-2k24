@@ -17,6 +17,8 @@ import {
     MenuItem,
     Fade,
     Snackbar,
+    Backdrop,
+    CircularProgress,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -31,11 +33,9 @@ import { motion } from 'framer-motion';
 import announcementMusic from '../assets/checkai.mp3'
 
 const seatPreferences = [
-    'Window Seat',
+    'Window',
     'Middle',
-    'Front',
-    'Back',
-    'No Preference'
+    'Perimeter',
 ];
 
 const UserDetails: React.FC = () => {
@@ -55,7 +55,7 @@ const UserDetails: React.FC = () => {
 
     useEffect(() => {
         // Play the audio
-        
+
         const audioElement = audioRef.current;
 
         if (audioElement) {
@@ -82,8 +82,8 @@ const UserDetails: React.FC = () => {
                 }
             };
         }
-        
-        
+
+
     }, []);
 
 
@@ -93,6 +93,7 @@ const UserDetails: React.FC = () => {
 
             if (storedUserData) {
                 try {
+                    setLoading(true);
                     const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/email/${storedUserData.email}`, {
                         method: 'GET',
                         headers: {
@@ -110,9 +111,12 @@ const UserDetails: React.FC = () => {
                 } catch (error) {
                     console.error("Error fetching user data:", error);
                 }
+                finally{
+                    setLoading(false);
+                }
             }
         };
-        
+
 
         const fetchAnnouncements = async () => {
             try {
@@ -196,7 +200,7 @@ const UserDetails: React.FC = () => {
         doc.setFontSize(24);
         doc.setTextColor(40, 40, 200); // Blue color
         doc.text("Mahadev ka Dewane Trip to Mukutmanipur 2k24", 10, 10);
-    
+
         // User Details
         doc.setFontSize(20);
         doc.setTextColor(0, 0, 0); // Black color
@@ -206,24 +210,24 @@ const UserDetails: React.FC = () => {
         doc.text(`Email: ${userData?.email}`, 10, 50);
         doc.text(`Date of Birth: ${userData?.dob}`, 10, 60);
         doc.text(`Phone Number: ${userData?.phone}`, 10, 70);
-    
+
         // Family Members Section
         doc.setFontSize(16);
         doc.setTextColor(0, 0, 100); // Dark blue color
         doc.text("Family Members:", 10, 90);
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0); // Black color
-    
+
         familyMembers.forEach((member, index) => {
             const yPosition = 100 + (index * 30); // Increase spacing
             doc.text(`- Name: ${member.name}`, 10, yPosition);
             doc.text(`  Seat Preference: ${member.seatPreference}`, 10, yPosition + 10);
             doc.text(`  Seat Number: ${member.seatNumber || 'Not Assigned'}`, 10, yPosition + 20);
-            
+
             // Draw a line after each member for better separation
             doc.line(10, yPosition + 25, 200, yPosition + 25); // Draw line
         });
-    
+
         // Save the document
         doc.save("user_details.pdf");
     };
@@ -256,7 +260,7 @@ const UserDetails: React.FC = () => {
         );
     }
 
-   
+
 
     return (
         <Fade in={true}>
@@ -276,8 +280,8 @@ const UserDetails: React.FC = () => {
                     <Typography variant="h4" gutterBottom textAlign="center">
                         User Details
                     </Typography>
-                      {/* PDF Icon */}
-                      {userData.isConfirmSeatBooking && !userData.isArchived && familyMembers.length > 0 && familyMembers.some(member => member.seatNumber) && (
+                    {/* PDF Icon */}
+                    {userData.isConfirmSeatBooking && !userData.isArchived && familyMembers.length > 0 && familyMembers.some(member => member.seatNumber) && (
                         <IconButton onClick={handleDownloadPDF}>
                             <PictureAsPdfIcon color="primary" />
                         </IconButton>
@@ -286,7 +290,7 @@ const UserDetails: React.FC = () => {
 
                 <Card variant="outlined" sx={{ marginBottom: 2 }}>
                     <CardContent>
-                    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+                        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
                             <Typography variant="h5">{userData.rName}</Typography>
                             <Typography variant="subtitle1">{userData.email}</Typography>
                         </Box>
@@ -315,7 +319,7 @@ const UserDetails: React.FC = () => {
                         {!userData.isArchived && userData.isConfirmSeatBooking
                             ? 'Welcome to Mahadev ke Dewane tour of 2k24 Mukutmanipur trip with itineraries of these days.'
                             : null}
-                        {!userData.isArchived && userData.isConfirmSeatBooking
+                        {!userData.isArchived && !userData.isConfirmSeatBooking
                             ? 'Thank you for your request! Our team is currently reviewing it and will take action shortly. In the meantime, we appreciate your patience and encourage you to stay tuned for updates!'
                             : null}
                     </Typography>
@@ -327,7 +331,7 @@ const UserDetails: React.FC = () => {
 
                 {shouldShowAnnouncements && (
                     <Box sx={{ marginBottom: 2 }}>
-                           <audio ref={audioRef} src={announcementMusic} autoPlay  style={{ display: 'none' }} />
+                        <audio ref={audioRef} src={announcementMusic} autoPlay style={{ display: 'none' }} />
                         <Typography variant="h5" color="primary" textAlign="center">
                             Latest Announcements
                         </Typography>
@@ -441,6 +445,9 @@ const UserDetails: React.FC = () => {
                     message="Announcement made!"
                     autoHideDuration={3000}
                 />
+                <Backdrop open={loading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                    <CircularProgress color="inherit" />
+                </Backdrop>
             </Box>
         </Fade>
     );

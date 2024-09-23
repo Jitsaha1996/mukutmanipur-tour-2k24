@@ -9,6 +9,7 @@ import {
     InputLabel,
     Select,
     CircularProgress,
+    Backdrop,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -35,11 +36,9 @@ const StyledBox = styled(Box)(({ theme }) => ({
 }));
 
 const seatPreferences = [
-    'Window Seat',
+    'Window',
     'Middle',
-    'Front',
-    'Back',
-    'No Preference'
+    'Perimeter',
 ];
 
 const Register: React.FC = () => {
@@ -321,6 +320,9 @@ const Register: React.FC = () => {
                     </Button>
                 </Box>
             </form>
+            <Backdrop open={loading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                    <CircularProgress color="inherit" />
+                </Backdrop>
             <Toaster
                 open={toasterOpen}
                 message={toasterMessage}

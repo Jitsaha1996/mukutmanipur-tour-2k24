@@ -29,7 +29,7 @@ const userSchema = mongoose.Schema(
     phone: {
       type: String,
       required: true,
-      unique: false,
+      unique: true,
     },
     dob: {
       type: String,
@@ -42,6 +42,11 @@ const userSchema = mongoose.Schema(
       default: "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
     },
     isArchived: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    isCashier: {
       type: Boolean,
       required: true,
       default: false,
