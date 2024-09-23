@@ -155,13 +155,13 @@ const Budget: React.FC = () => {
                         <Grid item xs={12} md={6}>
                             <BudgetCard>
                                 <Typography variant="h5">Total Expected Budget</Typography>
-                                <Typography variant="h6">${totalExpectedBudget}</Typography>
+                                <Typography variant="h6">{totalExpectedBudget}</Typography>
                             </BudgetCard>
                         </Grid>
                         <Grid item xs={12} md={6}>
                             <BudgetCard>
                                 <Typography variant="h5">Current Budget</Typography>
-                                <Typography variant="h6">${currentBudget}</Typography>
+                                <Typography variant="h6">{currentBudget}</Typography>
                                 <ResponsiveContainer width="100%" height={200}>
                                     <PieChart>
                                         <Pie
@@ -210,7 +210,7 @@ const Budget: React.FC = () => {
                                 {expenses.map((expense, index) => (
                                     <TableRow key={expense.expensesId}>
                                         <TableCell>{expense.expensesDeatils}</TableCell>
-                                        <TableCell align="right">${expense.expensesValue}</TableCell>
+                                        <TableCell align="right">{expense.expensesValue}</TableCell>
                                         <TableCell align="right">
                                             <ActionButton color="primary" onClick={() => handleOpenModal(expense)} startIcon={<EditIcon />}>
                                                 Edit
@@ -229,7 +229,7 @@ const Budget: React.FC = () => {
                         <Grid item xs={12} md={6}>
                             <BudgetCard>
                                 <Typography variant="h5">Total Expenses</Typography>
-                                <Typography variant="h6">${totalExpenses}</Typography>
+                                <Typography variant="h6">{totalExpenses}</Typography>
                             </BudgetCard>
                         </Grid>
                         <Grid item xs={12} md={6}>
