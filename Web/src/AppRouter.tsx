@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import { About } from './components/About';
+
 import Header from './components/Header';
 import Register from './components/Register';
 import UserDetails from './components/UserDetails';
@@ -9,6 +9,7 @@ import Login from './components/Login';
 import Home from './components/Home';
 import Contact from './components/Contact';
 import AdminPanel from './components/admin/AdminPanel';
+import About from './components/About';
 
 // Define the type for your route configuration
 interface RouteConfig {
