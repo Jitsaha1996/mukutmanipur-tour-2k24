@@ -21,6 +21,9 @@ import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useSelector } from 'react-redux';
+import { IUser } from '../../common/user';
+import { RootState } from '../../redux/store';
 
 const colors = ['#4caf50', '#f44336', '#2196f3', '#ffeb3b'];
 
@@ -44,6 +47,7 @@ const ActionButton = styled(Button)(({ theme }) => ({
 }));
 
 const Budget: React.FC = () => {
+    const userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -186,8 +190,7 @@ const Budget: React.FC = () => {
                             </BudgetCard>
                         </Grid>
                     </Grid>
-
-                    <ActionButton
+                    {userData?.isAdmin && userData?.isCashier ? <ActionButton
                         variant="contained"
                         color="primary"
                         onClick={() => handleOpenModal()}
@@ -195,7 +198,8 @@ const Budget: React.FC = () => {
                         sx={{ mt: 3 }}
                     >
                         Add Expense
-                    </ActionButton>
+                    </ActionButton> : null}
+
 
                     <TableContainer component={Paper} sx={{ mt: 3 }}>
                         <Table>
@@ -203,7 +207,8 @@ const Budget: React.FC = () => {
                                 <TableRow>
                                     <TableCell>Expense Name</TableCell>
                                     <TableCell align="right">Amount</TableCell>
-                                    <TableCell align="right">Actions</TableCell>
+                                    {userData?.isAdmin && userData?.isCashier ?
+                                        <TableCell align="right">Actions</TableCell> : null}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -211,14 +216,16 @@ const Budget: React.FC = () => {
                                     <TableRow key={expense.expensesId}>
                                         <TableCell>{expense.expensesDeatils}</TableCell>
                                         <TableCell align="right">{expense.expensesValue}</TableCell>
-                                        <TableCell align="right">
-                                            <ActionButton color="primary" onClick={() => handleOpenModal(expense)} startIcon={<EditIcon />}>
+                                        {userData?.isAdmin && userData?.isCashier ?
+                                            <TableCell align="right">
+                                                <ActionButton color="primary" onClick={() => handleOpenModal(expense)} startIcon={<EditIcon />}>
 
-                                            </ActionButton>
-                                            <ActionButton color="error" onClick={() => handleDeleteExpense(expense.expensesId)} startIcon={<DeleteIcon />}>
+                                                </ActionButton>
+                                                <ActionButton color="error" onClick={() => handleDeleteExpense(expense.expensesId)} startIcon={<DeleteIcon />}>
 
-                                            </ActionButton>
-                                        </TableCell>
+                                                </ActionButton>
+                                            </TableCell> : null
+                                        }
                                     </TableRow>
                                 ))}
                             </TableBody>

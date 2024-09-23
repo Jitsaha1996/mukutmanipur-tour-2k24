@@ -74,15 +74,15 @@ const Header: React.FC = () => {
     { text: 'Home', onClick: () => navigate('/') },
     { text: 'About', onClick: () => navigate('/about') },
     { text: 'Contact', onClick: onHandleContact },
-    { text: 'Admin', onClick: onHandleAdmin },
-    ...(userData ? 
-      [{ text: 'Logout', onClick: onHandleLogout },
-        { text: 'Details', onClick: onHandleDetails },
-      ]
-       : 
-      [{ text: 'Login', onClick: () => navigate('/login') }]
-  )
-  ];
+    ...(userData?.isAdmin ? [{ text: 'Admin', onClick: onHandleAdmin }] : []),
+    ...(userData 
+        ? [
+            { text: 'Logout', onClick: onHandleLogout },
+            { text: 'Details', onClick: onHandleDetails },
+          ]
+        : [{ text: 'Login', onClick: () => navigate('/login') }]
+    )
+];
 
   return (
     <>

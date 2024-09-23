@@ -18,4 +18,5 @@ export interface IUser {
     isConfirmSeatBooking?:boolean;
     isAdmin?:boolean;
     isArchived?:boolean;
+    isCashier?:boolean;
 }
