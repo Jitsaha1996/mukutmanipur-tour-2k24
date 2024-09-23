@@ -34,6 +34,13 @@ const UserCard = styled(Box)(({ theme }) => ({
     },
 }));
 
+// const Typography = styled(Box)(({ theme }) => ({
+//     textAlign: 'center',
+//     fontWeight: 'bold',
+//     color: type === 'seatdetails' ? 'orange' : type === 'paid' ? 'green' : 'red',
+//     transition: 'color 0.3s',
+// }));
+
 const UserPayment: React.FC = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -47,7 +54,8 @@ const UserPayment: React.FC = () => {
         const fetchUsers = async () => {
             setLoading(true);
             try {
-                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users');
+                 
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`);
                 const data = await response.json();
                 
                 // Filter users with isConfirmSeatBooking set to true
@@ -83,7 +91,7 @@ const UserPayment: React.FC = () => {
             };
 
             try {
-                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/paymentinfo', {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/paymentinfo`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -93,7 +101,7 @@ const UserPayment: React.FC = () => {
 
                 if (!response.ok) throw new Error('Failed to update payment info');
                 
-                const updatedResponse = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users');
+                const updatedResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/users/`);
                 const updatedData = await updatedResponse.json();
                 
                 // Filter again after updating to reflect changes
@@ -110,6 +118,13 @@ const UserPayment: React.FC = () => {
     const handleChangePage = (event: React.ChangeEvent<unknown>, value: number) => {
         setPage(value);
     };
+
+    const getSeatDeatils = (seat:any[])=>{
+        return seat?.map((item:any)=>{
+            if(item?.seatNumber)
+                return item?.seatNumber;
+        }).join(",");
+    }
 
     // Calculate users for the current page
     const startIndex = (page - 1) * itemsPerPage;
@@ -130,6 +145,7 @@ const UserPayment: React.FC = () => {
                                 <UserCard>
                                     <Typography variant="h6">{`${user.rName} (${user.email})`}</Typography>
                                     <Typography variant="body1">Family Members: {user.familyMembers.length}</Typography>
+                                    <Typography  color="#555555" variant="body2">Seat Numbers: {getSeatDeatils(user.familyMembers)}</Typography>
                                     <PaymentCell type="expected">
                                         Expected: {user.familyMembers.length * 1200}
                                     </PaymentCell>

@@ -93,7 +93,7 @@ const UserDetails: React.FC = () => {
 
             if (storedUserData) {
                 try {
-                    const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/users/email/${storedUserData.email}`, {
+                    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/email/${storedUserData.email}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -112,10 +112,11 @@ const UserDetails: React.FC = () => {
                 }
             }
         };
+        
 
         const fetchAnnouncements = async () => {
             try {
-                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/announcement/');
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/announcement/`);
                 if (!response.ok) throw new Error('Failed to fetch announcements');
                 const data = await response.json();
                 setAnnouncements(data);
@@ -154,7 +155,7 @@ const UserDetails: React.FC = () => {
                 familyMembers: familyMembers,
                 isConfirmSeatBooking: false,
             };
-            const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/edit', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/edit`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -166,7 +167,7 @@ const UserDetails: React.FC = () => {
             const updatedUserData = await response.json();
             if (updatedUserData?.email) {
                 try {
-                    const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/users/email/${updatedUserData?.email}`, {
+                    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/email/${updatedUserData?.email}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',

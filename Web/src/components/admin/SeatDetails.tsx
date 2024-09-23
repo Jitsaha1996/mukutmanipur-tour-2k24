@@ -64,9 +64,11 @@ const SeatDetails: React.FC = () => {
     const fetchSeats = async () => {
         setLoading(true);
         try{
-        const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/');
+           
+        const response = await fetch( `${process.env.REACT_APP_API_URL}/api/busseatdetals/`);
         const data = await response.json();
-        setSeats(data);
+        const sortedData = data.sort((a:any, b:any) => a?.seatNumber - b.seatNumber);
+        setSeats(sortedData);
         }
         catch (error) {
             console.error('Error fetching active seats:', error);
@@ -84,8 +86,8 @@ const SeatDetails: React.FC = () => {
     }, []);
 
     const handleOpen = (seat?: any) => {
-        setCurrentSeat(seat);
-        setEditMode(!!seat.seatNumber);
+        setCurrentSeat({ seatNumber: '', seatDetails: 'Window', seatStatus: true });
+        setEditMode(!!seat?.seatNumber);
         setOpen(true);
     };
 
@@ -99,11 +101,10 @@ const SeatDetails: React.FC = () => {
         setSnackbarOpen(false);
         setDeleteSnackbarOpen(false);
     };
-
     const handleSubmit = async () => {
         const url = editMode
-            ? `https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/update`
-            : `https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/create`;
+            ?  `${process.env.REACT_APP_API_URL}/api/busseatdetals/update`
+            :  `${process.env.REACT_APP_API_URL}/api/busseatdetals/create`;
         const method = editMode ? 'PUT' : 'POST';
         const payload = {
             seatNumber: currentSeat.seatNumber,
@@ -139,7 +140,7 @@ const SeatDetails: React.FC = () => {
     };
 
     const handleDeleteConfirm = async () => {
-        const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/delete/${currentSeat.seatNumber}`, {
+        const response = await fetch( `${process.env.REACT_APP_API_URL}/api/busseatdetals/delete/${currentSeat.seatNumber}`, {
             method: 'GET',
         });
 
@@ -171,9 +172,9 @@ const SeatDetails: React.FC = () => {
                     </TableHead>
                     <TableBody>
                         {seats.map((seat) => (
-                            <TableRow key={seat.seatNumber}>
-                                <StyledTableCell>{`${seat.seatNumber} - ${seat.seatDetails}`}</StyledTableCell>
-                                <StyledTableCell>{seat.seatStatus ? 'Available' : 'Unavailable'}</StyledTableCell>
+                            <TableRow key={seat?.seatNumber}>
+                                <StyledTableCell>{`${seat?.seatNumber} - ${seat.seatDetails}`}</StyledTableCell>
+                                <StyledTableCell>{seat?.seatStatus ? 'Available' : 'Unavailable'}</StyledTableCell>
                                 <StyledTableCell align="right">
                                     <IconButton disabled={!seat?.seatStatus} onClick={() => handleOpen(seat)}>
                                         <EditIcon />

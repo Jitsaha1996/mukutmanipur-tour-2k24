@@ -124,7 +124,7 @@ const Register: React.FC = () => {
         }
 
         try {
-            const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

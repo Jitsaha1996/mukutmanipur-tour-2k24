@@ -44,7 +44,7 @@ const AdminRegistration: React.FC = () => {
         const fetchUsers = async () => {
             setLoading(true); // Set loading to true when fetching starts
             try {
-                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/');
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/`);
                 if (!response.ok) throw new Error('Failed to fetch users');
                 const data = await response.json();
                 setUsers(data);
@@ -69,7 +69,7 @@ const AdminRegistration: React.FC = () => {
 
         if (seatUpdates.length > 0) {
             try {
-                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/bulkupdates', {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/busseatdetals/bulkupdates`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ const AdminRegistration: React.FC = () => {
 
     const updateUser = async (user: any) => {
         try {
-            const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/users/edit`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/edit`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

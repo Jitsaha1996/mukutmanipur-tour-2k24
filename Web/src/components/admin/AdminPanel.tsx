@@ -13,6 +13,8 @@ import SeatConfirmation from './SeatConfirmation';
 import SeatDetails from './SeatDetails';
 import Announcement from './Announcement';
 import UserPayment from './UserPayment';
+import Budget from './Budget';
+
 
 // Styled components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -68,6 +70,7 @@ const AdminPanel: React.FC = () => {
                     <StyledTab label="Payment Info" />
                     <StyledTab label="Seat Asigned" />
                     <StyledTab label="Seat Details" />
+                    <StyledTab label="Budget" />
                     <StyledTab label="Announcements" />
                    
                 </Tabs>
@@ -77,7 +80,8 @@ const AdminPanel: React.FC = () => {
                 {activeTab === 1 && <Typography variant="h6"><UserPayment/></Typography>}
                 {activeTab === 2 && <Typography variant="h6"><SeatConfirmation/></Typography>}
                 {activeTab === 3 && <Typography variant="h6"><SeatDetails/></Typography>}
-                {activeTab === 4 && <Typography variant="h6"><Announcement/></Typography>}
+                {activeTab === 4 && <Typography variant="h6"><Budget /></Typography>}
+                {activeTab === 5 && <Typography variant="h6"><Announcement/></Typography>}
                
             </TabContent>
         </Box>

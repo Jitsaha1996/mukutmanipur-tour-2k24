@@ -63,7 +63,7 @@ const Announcement: React.FC = () => {
     const fetchAnnouncements = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/announcement/');
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/announcement/`);
             if (!response.ok) throw new Error('Failed to fetch announcements');
             const data = await response.json();
             setAnnouncements(data);
@@ -98,11 +98,13 @@ const Announcement: React.FC = () => {
             announcementDetails,
             announcementStatus: true,
         };
+   
+
 
         setLoading(true);
         try {
             const method = isEdit ? 'PUT' : 'POST';
-            const url = isEdit ? 'https://mukutmanipur-tour-2k24.onrender.com/api/announcement/update' : 'https://mukutmanipur-tour-2k24.onrender.com/api/announcement/create';
+            const url = isEdit ? `${process.env.REACT_APP_API_URL}/api/announcement/update` :      `${process.env.REACT_APP_API_URL}/api/announcement/create`;
 
             const response = await fetch(url, {
                 method,
@@ -127,10 +129,10 @@ const Announcement: React.FC = () => {
 
     const handleDeleteAnnouncement = async () => {
         if (!confirmDelete.id) return;
-
+    
         setLoading(true);
         try {
-            const response = await fetch(`https://mukutmanipur-tour-2k24.onrender.com/api/announcement/delete/${confirmDelete.id}`, {
+            const response = await fetch( `${process.env.REACT_APP_API_URL}/api/announcement/delete/${confirmDelete.id}`, {
                 method: 'GET',
             });
 

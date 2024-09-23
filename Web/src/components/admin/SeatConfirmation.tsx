@@ -44,6 +44,12 @@ interface FamilyMember {
     seatNumber?: string;
 }
 
+interface FamilyWiseCost {
+    expectedCost?: string;
+    paid?: string;
+    due?: string;
+}
+
 interface IUser {
     _id: string;
     rName: string;
@@ -51,6 +57,8 @@ interface IUser {
     familyMembers: FamilyMember[];
     isConfirmSeatBooking: boolean;
     isArchived: boolean;
+    familyWiseCost?: FamilyWiseCost
+
 }
 
 const SeatConfirmation: React.FC = () => {
@@ -64,9 +72,9 @@ const SeatConfirmation: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true); // Loading state
     const fetchActiveSeats = async () => {
         setLoading(true);
-      
+   
         try {
-            const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/');
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/busseatdetals/`);
             if (!response.ok) throw new Error('Failed to fetch active seats');
             const data = await response.json();
             const filteredSeats = data.filter((seat: any) => seat.seatStatus === true);
@@ -74,20 +82,20 @@ const SeatConfirmation: React.FC = () => {
         } catch (error) {
             console.error('Error fetching active seats:', error);
         }
-        finally{
+        finally {
             setLoading(false);
         }
     };
     useEffect(() => {
-        
+
         const fetchUsers = async () => {
-            
+
             try {
-                const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/');
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/`);
                 if (!response.ok) throw new Error('Failed to fetch users');
                 const data = await response.json();
                 const filteredUsers = data.filter(
-                    (user: IUser) => user.isConfirmSeatBooking && !user.isArchived
+                    (user: IUser) => (user.isConfirmSeatBooking && !user.isArchived) && user?.familyWiseCost?.paid!==""
                 );
                 setUsers(filteredUsers);
             } catch (error) {
@@ -95,7 +103,7 @@ const SeatConfirmation: React.FC = () => {
             }
         };
 
-        
+
 
         fetchUsers();
         fetchActiveSeats();
@@ -112,11 +120,11 @@ const SeatConfirmation: React.FC = () => {
     };
 
     const handleUpdate = async () => {
-        
+
         if (!selectedUser) return;
-        
+
         try {
-            const response = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/users/edit', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/edit/`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -132,10 +140,10 @@ const SeatConfirmation: React.FC = () => {
                 seatStatus: false,
             }));
 
-            const bulkUpdateResponse = await fetch('https://mukutmanipur-tour-2k24.onrender.com/api/busseatdetals/bulkupdates', {
-               
+            const bulkUpdateResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/busseatdetals/bulkupdates`, {
+
                 method: 'PUT',
-                
+
                 headers: {
                     'Content-Type': 'application/json',
                 },
