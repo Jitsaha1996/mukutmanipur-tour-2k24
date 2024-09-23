@@ -223,7 +223,9 @@ const getUserByEmail = asynHandler(async (req, res) => {
       pic: user.pic,
       dob: user.dob,
       phone: user.phone,
-      familyWiseCost: user.familyWiseCost
+      familyWiseCost: user.familyWiseCost,
+      isCashier: user.isCashier
+
 
   });
 });
