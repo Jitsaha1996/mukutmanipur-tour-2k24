@@ -77,8 +77,8 @@ const SeatConfirmation: React.FC = () => {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/busseatdetals/`);
             if (!response.ok) throw new Error('Failed to fetch active seats');
             const data = await response.json();
-            const filteredSeats = data.filter((seat: any) => seat.seatStatus === true);
-            setActiveSeats(filteredSeats);
+            // const filteredSeats = data.filter((seat: any) => seat.seatStatus === true);
+            setActiveSeats(data);
         } catch (error) {
             console.error('Error fetching active seats:', error);
         }
@@ -230,7 +230,8 @@ const SeatConfirmation: React.FC = () => {
                                 margin="normal"
                             >
                                 {activeSeats.map(seat => (
-                                    <MenuItem key={seat.seatNumber} value={seat.seatNumber}>
+                                    <MenuItem key={seat.seatNumber} value={seat.seatNumber}
+                                    disabled={!seat.seatStatus}>
                                         {`${seat.seatNumber} - ${seat.seatDetails}`} {/* Displaying seat number and details */}
                                     </MenuItem>
                                 ))}

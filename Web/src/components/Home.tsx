@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button, Container } from '@mui/material';
+import { Box, Typography, Button, Container, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/system';
 import picture from '../assets/test2.jpg';
 
+import ResponsivePopup from './ResponsivePopup';
+
 // Styled components
+
+
+
 const BackgroundContainer = styled(Box)(({ theme }) => ({
     backgroundImage: `url('../assets/mukut1.jpg')`,
     backgroundSize: 'cover',
@@ -24,7 +30,7 @@ const BackgroundContainer = styled(Box)(({ theme }) => ({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay for better text visibility
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
 }));
 
@@ -32,10 +38,6 @@ const Content = styled(Box)(({ theme }) => ({
     position: 'relative',
     zIndex: 1,
     animation: 'fadeIn 1s ease-in',
-    '@keyframes fadeIn': {
-        '0%': { opacity: 0 },
-        '100%': { opacity: 1 },
-    },
 }));
 
 const AnimatedButton = styled(Button)(({ theme }) => ({
@@ -46,8 +48,23 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
     },
 }));
 
+const PopupTitle = styled(DialogTitle)(({ theme }) => ({
+    backgroundColor: theme.palette.primary.main,
+    color: '#fff',
+    textAlign: 'center',
+}));
+
+const PopupContent = styled(DialogContent)({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+});
+
+
+
 const Home: React.FC = () => {
     const [countdown, setCountdown] = useState<string>('');
+    const [open, setOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const targetDate = new Date('2024-12-28T00:00:00');
@@ -75,18 +92,22 @@ const Home: React.FC = () => {
         return () => clearInterval(timer);
     }, []);
 
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
     return (
         <BackgroundContainer sx={{
-          backgroundImage: `url(${picture})`, 
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed',
-      }}>
+            backgroundImage: `url(${picture})`, 
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed',
+        }}
+        >
             <Container>
                 <Content>
-                    <Typography variant="h2" sx={{fontFamily:'Croissant One'}} gutterBottom>
+                    <Typography variant="h2" sx={{ fontFamily: 'Croissant One' }} gutterBottom>
                         Welcome to the Night to Night Picnic!
                     </Typography>
-                    <Typography variant="h5" sx={{fontFamily:'Times New Roman'}} paragraph>
+                    <Typography variant="h5" sx={{ fontFamily: 'Times New Roman' }} paragraph>
                         Join us for an unforgettable experience in Mukutmanipur from <strong>December 28th, 2024</strong> to <strong>December 29th, 2024</strong>.
                     </Typography>
                     <Typography variant="body1" paragraph>
@@ -100,12 +121,18 @@ const Home: React.FC = () => {
                         color="secondary"
                         size="large"
                         sx={{ marginTop: 2 }}
-                        onClick={() => alert('More details coming soon!')}
+                        onClick={handleOpen}
                     >
                         Explore More
                     </AnimatedButton>
                 </Content>
             </Container>
+
+            {/* Popup */}
+            <ResponsivePopup
+            open={open}
+            handleClose={handleClose}
+            />
         </BackgroundContainer>
     );
 };

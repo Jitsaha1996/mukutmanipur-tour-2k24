@@ -10,15 +10,15 @@ import Rahul1 from '../assets/Rahul_para.jpeg';
 
 export const contactDetails = [
     {
-        name: "Rahul",
-        email: "janesmith@example.com",
-        phone: "+0987654321",
+        name: "Rahul Das",
+        email: "Rahul.spykar500@gmail.com",
+        phone: "8240828568",
         image: rahul,
     },
     {
         name: "Debasish Saha",
-        email: "janesmith@example.com",
-        phone: "+0987654321",
+        email: "debasish.saha43@gmail.com",
+        phone: "8013435076",
         image: Debashish,
     },
     {
@@ -35,14 +35,14 @@ export const contactDetails = [
     },
     {
         name: "Rup Karmakar",
-        email: "janesmith@example.com",
-        phone: "+0987654321",
+        email: "rupkarmakar46@gmail.com",
+        phone: "7890514378",
         image: rupImage,
     },
     {
         name: "Ayush Singh",
-        email: "alicejohnson@example.com",
-        phone: "+1122334455",
+        email: "ayushsingh53459@gmail.com",
+        phone: "8777097036",
         image: ayushImage,
     },
     {
@@ -53,8 +53,8 @@ export const contactDetails = [
     },
     {
         name: "Deep Karmakar",
-        email: "bobbrown@example.com",
-        phone: "+2233445566",
+        email: "Deepkarmakar98554@gmail.com",
+        phone: "8582860835",
         image: deepImage,
     }
 ];
