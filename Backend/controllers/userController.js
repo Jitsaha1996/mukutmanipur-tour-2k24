@@ -5,41 +5,42 @@ const jwtToken = require('../utils/generateTokes');
 // app.use(express.bodyParser({limit: '50mb'}));
 const registerUsers = asynHandler(async (req, res) => {
   const { rName, email, password, pic, dob, phone, isArchived, familyMembers } = req.body;
-  const userExist = await User.findOne({ email })
+
+  const userExist = await User.findOne({ email });
   if (userExist) {
-    res.status(400);
-    throw new Error("User Already Exist");
+      res.status(400);
+      throw new Error("User Already Exist");
   }
-  
-  const myBuffer = Buffer.from(pic, 'base64');
+
+  // Optionally check the size of the image before processing
+  if (Buffer.byteLength(pic, 'base64') > 1 * 1024 * 1024) { // Check if the base64 is greater than 1MB
+      res.status(400);
+      throw new Error("Image size exceeds limit of 1MB");
+  }
+
   const user = await User.create({
-    rName, email, password, pic, dob, phone, isArchived, familyMembers
-  })
-  
+      rName, email, password, pic, dob, phone, isArchived, familyMembers
+  });
+
   if (user) {
-    res.status(201).json({
-      _id: user._id,
-      rName: user.rName,
-      pic: user.pic,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      isConfirmSeatBooking: user.isConfirmSeatBooking,
-      phone: user.phone,
-      dob: user.dob,
-      familyMembers: user.familyMembers,
-      isArchived: isArchived.isArchived,
-      token: jwtToken(user._id)
-    })
+      res.status(201).json({
+          _id: user._id,
+          rName: user.rName,
+          pic: user.pic,
+          email: user.email,
+          isAdmin: user.isAdmin,
+          phone: user.phone,
+          dob: user.dob,
+          familyMembers: user.familyMembers,
+          isArchived: user.isArchived,
+          token: jwtToken(user._id),
+      });
   } else {
-    res.status(400);
-    throw new Error("Error Occured");
+      res.status(400);
+      throw new Error("Error Occurred");
   }
+});
 
-  res.json({
-    rName, email
-  })
-
-})
 const editUsers = asynHandler(async (req, res) => {
   const { rName, pic, dob, phone, email, isArchived, familyMembers,isConfirmSeatBooking } = req.body;
   const userExist = await User.findOne({ email })

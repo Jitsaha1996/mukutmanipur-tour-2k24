@@ -19,6 +19,8 @@ import Toaster from './Toaster';
 import { setUser } from '../redux/userSlice';
 import { IUser } from '../common/user';
 import { RootState } from '../redux/store';
+import imageCompression from 'browser-image-compression';
+import ImagePreview from './ImagePreview';
 
 // Styled Box for form
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -60,7 +62,8 @@ const Register: React.FC = () => {
         pic: '',
         familyMembers: [{ name: '', seatPreference: '', seatNumber: '' }]
     });
-
+    
+    const [imagePreview, setImagePreview] = useState<any>(null);
     const [numFamilyMembers, setNumFamilyMembers] = useState(1);
     const [isPhotoUploaded, setIsPhotoUploaded] = useState(false); // New state for photo upload status
 
@@ -92,19 +95,34 @@ const Register: React.FC = () => {
         setFormData({ ...formData, familyMembers });
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e:any) => {
         const file = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData({ ...formData, pic: reader.result as string });
+            setLoading(true); // Show loading state
+            try {
+                // Compress the image
+                const compressedFile = await imageCompression(file, {
+                    maxSizeMB: 1, // Set max size in MB
+                    maxWidthOrHeight: 1920, // Set max width or height
+                });
+                
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setFormData({ ...formData, pic: reader.result as string});
+                    setImagePreview(reader.result); // Set preview image
+                    setIsPhotoUploaded(true);
+                    setToasterOpen(true);
+                    setToasterMessage('Successfully Uploaded');
+                    // Show success toaster message
+                    setTimeout(() => setLoading(false), 2000); // Hide loading after 2 seconds
+                };
+                reader.readAsDataURL(compressedFile);
+            } catch (error) {
                 setToasterOpen(true);
-                setToasterSeverity("success");
-                setToasterMessage("Photo Uploaded!!");
-                setIsPhotoUploaded(true); // Update the state to reflect photo upload
-                setTimeout(() => setToasterOpen(false), 2000); // Delay toaster close
-            };
-            reader.readAsDataURL(file);
+                setToasterMessage('Error uploading image:');
+                console.error('Error uploading image:', error);
+                setLoading(false);
+            }
         }
     };
 
@@ -278,29 +296,31 @@ const Register: React.FC = () => {
                             </FormControl>
                         </Box>
                     ))}
-                    <Box sx={{ marginY: "20px" }}>
-                        <input
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            id="upload-picture"
-                            type="file"
-                            onChange={handleImageUpload}
-                        />
-                        <label htmlFor="upload-picture">
-                            <Button
-                                variant="contained"
-                                component="span"
-                                sx={{
-                                    backgroundColor: isPhotoUploaded ? 'green' : theme.palette.primary.main,
-                                    '&:hover': {
-                                        backgroundColor: isPhotoUploaded ? 'darkgreen' : theme.palette.primary.dark,
-                                    },
-                                }}
-                            >
-                                Upload Picture
-                            </Button>
-                        </label>
-                    </Box>
+                   <Box sx={{ marginY: "20px" }}>
+            <input
+                accept="image/*"
+                style={{ display: 'none' }}
+                id="upload-picture"
+                type="file"
+                onChange={handleImageUpload}
+            />
+            <label htmlFor="upload-picture">
+                <Button
+                    variant="contained"
+                    component="span"
+                    sx={{
+                        backgroundColor: isPhotoUploaded ? 'green' : 'primary.main',
+                        '&:hover': {
+                            backgroundColor: isPhotoUploaded ? 'darkgreen' : 'primary.dark',
+                        },
+                    }}
+                >
+                    Upload Picture
+                </Button>
+            </label>
+            {imagePreview && <ImagePreview src={imagePreview} />}
+           
+        </Box>
 
                     <Button
                         type="submit"
