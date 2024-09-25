@@ -2,14 +2,13 @@ import React from 'react';
 import { Dialog, Typography, IconButton, Box } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/system';
-import s1 from '../assets/s1.jpg'; // Adjust paths according to your images
+import s1 from '../assets/s1.jpg';
 import s2 from '../assets/s2.jpg';
 import s3 from '../assets/s3.jpg';
 import s4 from '../assets/s4.jpg';
 import s5 from '../assets/s5.jpg';
 import s6 from '../assets/s6.jpg';
 import s7 from '../assets/s7.jpg';
- // Make sure to import your ImageSectionComponent
 
 // Styled components
 const ImageSection = styled(Box)<any>(({ img }) => ({
@@ -21,16 +20,17 @@ const ImageSection = styled(Box)<any>(({ img }) => ({
     marginBottom: '16px',
     borderRadius: '8px',
     position: 'relative',
+    overflow: 'hidden',
     transition: 'transform 0.5s ease',
     '&:hover': {
         transform: 'scale(1.05)',
     },
 }));
-const ImageSectionComponent : React.FC<any> = ({ img }) => (
-    <ImageSection>
-        <img src={img} alt="Sightseeing" />
-    </ImageSection>
+
+const ImageSectionComponent: React.FC<any> = ({ img }) => (
+    <ImageSection img={img} />
 );
+
 const PopupTitle = styled(Box)(({ theme }) => ({
     position: 'relative',
     padding: theme.spacing(2),
@@ -49,7 +49,7 @@ const PopupTitle = styled(Box)(({ theme }) => ({
 const PopupContent = styled(Box)(({ theme }) => ({
     padding: theme.spacing(2),
     overflowY: 'auto',
-    maxHeight: '70vh', // To make it scrollable on small screens
+    maxHeight: '70vh',
     '@media (max-width: 600px)': {
         padding: theme.spacing(1),
     },
@@ -66,7 +66,7 @@ const DialogContainer = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const ResponsivePopup : React.FC<any> =  ({ open, handleClose }) => {
+const ResponsivePopup: React.FC<any> = ({ open, handleClose }) => {
     return (
         <DialogContainer open={open} onClose={handleClose} fullWidth maxWidth="md">
             <PopupTitle>

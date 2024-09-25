@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import logo from '../assets/baba.jpg';
 import {
     Box,
     Typography,
@@ -197,37 +198,57 @@ const UserDetails: React.FC = () => {
 
     const handleDownloadPDF = () => {
         const doc = new jsPDF();
+    
+        // Add Logo to the Header
+        const imgData = logo; // Use the base64 string or image URL
+        doc.addImage(imgData, 'JPEG', 70, 10, 50, 50); // Adjust x, y, width, height as needed
+    
+        // Title
         doc.setFontSize(24);
         doc.setTextColor(40, 40, 200); // Blue color
-        doc.text("Mahadev ka Dewane Trip to Mukutmanipur 2k24", 10, 10);
-
+        doc.text("Mahadev ka Dewane Trip to Mukutmanipur 2k24", 10, 70);
+    
         // User Details
         doc.setFontSize(20);
         doc.setTextColor(0, 0, 0); // Black color
-        doc.text("User Details", 10, 30);
+        doc.text("User Details", 10, 90);
         doc.setFontSize(14);
-        doc.text(`Name: ${userData?.rName}`, 10, 40);
-        doc.text(`Email: ${userData?.email}`, 10, 50);
-        doc.text(`Date of Birth: ${userData?.dob}`, 10, 60);
-        doc.text(`Phone Number: ${userData?.phone}`, 10, 70);
-
+        doc.text(`Name: ${userData?.rName}`, 10, 110);
+        doc.text(`Email: ${userData?.email}`, 10, 120);
+        doc.text(`Date of Birth: ${userData?.dob}`, 10, 130);
+        doc.text(`Phone Number: ${userData?.phone}`, 10, 140);
+    
         // Family Members Section
         doc.setFontSize(16);
         doc.setTextColor(0, 0, 100); // Dark blue color
-        doc.text("Family Members:", 10, 90);
+        doc.text("Family Members:", 10, 160);
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0); // Black color
-
-        familyMembers.forEach((member, index) => {
-            const yPosition = 100 + (index * 30); // Increase spacing
-            doc.text(`- Name: ${member.name}`, 10, yPosition);
-            doc.text(`  Seat Preference: ${member.seatPreference}`, 10, yPosition + 10);
-            doc.text(`  Seat Number: ${member.seatNumber || 'Not Assigned'}`, 10, yPosition + 20);
-
-            // Draw a line after each member for better separation
-            doc.line(10, yPosition + 25, 200, yPosition + 25); // Draw line
+    
+        let currentYPosition = 170; // Start position for family members
+    
+        familyMembers.forEach((member) => {
+            doc.setTextColor(0, 100, 0); // Dark green for member name
+            doc.text(`- Name: ${member.name}`, 10, currentYPosition);
+            
+            doc.setTextColor(200, 0, 0); // Red for seat preference
+            doc.text(`  Seat Preference: ${member.seatPreference}`, 10, currentYPosition + 10);
+            
+            doc.setTextColor(0, 0, 200); // Blue for seat number
+            doc.text(`  Seat Number: ${member.seatNumber || 'Not Assigned'}`, 10, currentYPosition + 20);
+    
+            // Draw a colored line after each member for better separation
+            doc.setDrawColor(255, 165, 0); // Orange color for lines
+            doc.line(10, currentYPosition + 25, 200, currentYPosition + 25); // Draw line
+    
+            currentYPosition += 40; // Increase position for next member
         });
-
+    
+        // Add Boarding Pass Header
+        doc.setFontSize(18);
+        doc.setTextColor(255, 0, 0); // Red for boarding pass
+        doc.text("Mahadev Ke Dewane Boarding Pass", 10, currentYPosition );
+        
         // Save the document
         doc.save("user_details.pdf");
     };
