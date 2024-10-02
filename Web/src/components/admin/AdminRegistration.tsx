@@ -64,7 +64,7 @@ const AdminRegistration: React.FC = () => {
             .map((member) => ({
                 seatNumber: member.seatNumber,
                 seatDetails: member.seatPreference,
-                seatStatus: false,
+                seatStatus: true,
             }));
 
         if (seatUpdates.length > 0) {

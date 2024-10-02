@@ -17,37 +17,35 @@ const BusLayoutContainer = styled.div`
   margin: 0 auto;
   padding: 20px;
   background-color: #B2E0D4;
-  overflow: hidden; // Prevent overflow
+  overflow: hidden;
 `;
 
 const Side = styled.div`
   display: flex;
-  flex-wrap: wrap; // Allow wrapping
-  width: 40%; // Use percentage instead of vw
+  flex-wrap: wrap;
+  width: 40%;
   padding: 10px;
   border: 2px solid black;
-  box-sizing: border-box; // Ensure border is included in width
+  box-sizing: border-box;
 `;
 
 const SeatRow = styled.div`
   display: flex;
-  justify-content: space-between; // Space items evenly
-  width: 100%; // Full width of the parent
+  justify-content: space-between;
+  width: 100%;
   margin-bottom: 10px;
 `;
 
 const Seat = styled.div<{ selected: boolean }>`
-  flex: 1; // Allow seats to grow and take available space
+  flex: 1;
   height: 40px;
-  background-color: #ccc;
+  background-color: ${({ selected }) => (selected ? '#4caf50' : '#ccc')};
   border: 1px solid #333;
   text-align: center;
   line-height: 40px;
-  cursor: pointer;
   border-radius: 5px;
-  background-color: ${({ selected }) => (selected ? '#4caf50' : '#ccc')};
   color: ${({ selected }) => (selected ? 'white' : 'black')};
-  margin: 0 5px; // Add a small margin to create space between seats
+  margin: 0 5px;
 `;
 
 const LastRow = styled.div`
@@ -62,13 +60,12 @@ const BusLayout: React.FC = () => {
   const dispatch = useDispatch();
   const userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
-  const [isSeatDetailsVisible, setIsSeatDeatilsVisible] = useState<boolean>(false);
+  const [isSeatDetailsVisible, setIsSeatDetailsVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchUserData = async () => {
-    
       const storedUserData: IUser | null = getFromLocalStorage('userData');
-
       if (storedUserData) {
         try {
           setLoading(true);
@@ -86,26 +83,35 @@ const BusLayout: React.FC = () => {
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
-        }
-        finally {
+        } finally {
           setLoading(false);
+          if (userData) {
+            const seatDetails = userData.familyMembers
+              .filter((member: FamilyMember) => member.seatNumber)
+              .map((member: FamilyMember) => member.seatNumber);
+              console.log("ttt",seatDetails);
+            setSelectedSeats(seatDetails as string[]);
+            setIsSeatDetailsVisible(seatDetails.length > 0);
+          }
         }
       }
     };
 
     fetchUserData();
-
   }, [dispatch]);
 
-  useEffect(() => {
-    setLoading(true);
-    setIsSeatDeatilsVisible(!!userData?.familyMembers.every((item: FamilyMember) => item.seatNumber !== ""));
-    const seatDeatils = !!userData?.familyMembers.every((item: FamilyMember) => item.seatNumber !== "") ?
-      userData?.familyMembers?.map((item: FamilyMember) => item.seatNumber) : [];
-    toggleSeatSelection(seatDeatils as string[]);
+  const checkSeats=(selectedSeats:any,seat:any)=>{
+    console.log("sgkg",selectedSeats?.includes(seat.toString()));
+    if(selectedSeats?.some((item:string)=>item.trim() === seat))
+      return true;
+    else return false;
+   
 
-    setLoading(false);
-  }, [userData]);
+  }
+
+  // useEffect(() => {
+   
+  // }, [userData]);
 
   const seats = {
     left: [
@@ -119,7 +125,7 @@ const BusLayout: React.FC = () => {
       ['36', '37'],
       ['41', '42'],
       ['46', '47'],
-      ['51', '52']
+      ['51', '52'],
     ],
     right: [
       ['3', '4', '5'],
@@ -132,13 +138,9 @@ const BusLayout: React.FC = () => {
       ['38', '39', '40'],
       ['43', '44', '45'],
       ['48', '49', '50'],
-      ['53', '54', '55']
+      ['53', '54', '55'],
     ],
-    lastRow: ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7'],
-  };
-
-  const toggleSeatSelection = (seats: string[]) => {
-    setSelectedSeats(seats);
+    lastRow: ['56', '57', '58', '59', '60', '61', '62'],
   };
 
   return (
@@ -155,7 +157,7 @@ const BusLayout: React.FC = () => {
               <Avatar
                 alt="User Avatar"
                 src={picture}
-                style={{ width: '70px', height: '70px' }} // Adjust the size as needed
+                style={{ width: '70px', height: '70px' }}
               />
             </Box>
           </Box>
@@ -164,11 +166,7 @@ const BusLayout: React.FC = () => {
               {seats.left.map((row, rowIndex) => (
                 <SeatRow key={rowIndex}>
                   {row.map((seat) => (
-                    <Seat
-                      key={seat}
-                      selected={selectedSeats.includes(seat)}
-
-                    >
+                    <Seat key={seat} selected={checkSeats(selectedSeats,seat)} >
                       {seat}
                     </Seat>
                   ))}
@@ -176,17 +174,13 @@ const BusLayout: React.FC = () => {
               ))}
             </Side>
 
-            <Box display="flex" width="20vw" /> {/* Optional spacer */}
+            <Box display="flex" width="20vw" />
 
             <Side className="right-side">
               {seats.right.map((row, rowIndex) => (
                 <SeatRow key={rowIndex}>
                   {row.map((seat) => (
-                    <Seat
-                      key={seat}
-                      selected={selectedSeats.includes(seat)}
-
-                    >
+                    <Seat key={seat} selected={checkSeats(selectedSeats,seat)}>
                       {seat}
                     </Seat>
                   ))}
@@ -195,15 +189,10 @@ const BusLayout: React.FC = () => {
             </Side>
           </Box>
 
-          {/* Last row (optional) */}
           <Box display="flex" flexDirection="row" width="100%">
             <LastRow className="last-row">
               {seats.lastRow.map((seat) => (
-                <Seat
-                  key={seat}
-                  selected={selectedSeats.includes(seat)}
-
-                >
+                <Seat key={seat} selected={checkSeats(selectedSeats,seat)}>
                   {seat}
                 </Seat>
               ))}
