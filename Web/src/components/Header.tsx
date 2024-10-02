@@ -5,7 +5,7 @@ import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
-import { IUser } from '../common/user';
+import { FamilyMember, IUser } from '../common/user';
 import { clearUser } from '../redux/userSlice';
 import picture from '../assets/baba.jpg';
 
@@ -17,7 +17,7 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 
 const LogoContainer = styled(IconButton)(({ theme }) => ({
   marginRight: theme.spacing(2),
-  backgroundColor:theme.palette.background.paper, // Space between logo and buttons
+  backgroundColor: theme.palette.background.paper, // Space between logo and buttons
   cursor: 'pointer',
   transition: 'transform 0.3s',
   '&:hover': {
@@ -44,7 +44,7 @@ const Header: React.FC = () => {
   const userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
   const theme = useTheme();
   const dispatch = useDispatch();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const onHandleregister = () => {
@@ -69,20 +69,25 @@ const Header: React.FC = () => {
   const onHandleDetails = () => {
     navigate("/user-details");
   }
+  const onHandleSeatDetails = () => {
+    navigate("/seat-details");
+  }
 
   const menuItems = [
     { text: 'Home', onClick: () => navigate('/') },
     { text: 'About', onClick: () => navigate('/about') },
     { text: 'Contact', onClick: onHandleContact },
     ...(userData?.isAdmin ? [{ text: 'Admin', onClick: onHandleAdmin }] : []),
-    ...(userData 
-        ? [
-            { text: 'Logout', onClick: onHandleLogout },
-            { text: 'Details', onClick: onHandleDetails },
-          ]
-        : [{ text: 'Login', onClick: () => navigate('/login') }]
-    )
-];
+    ...(userData
+      ? [
+        { text: 'Logout', onClick: onHandleLogout },
+        { text: 'Details', onClick: onHandleDetails },
+
+      ]
+      : [{ text: 'Login', onClick: () => navigate('/login') }]
+    ),
+    ...(userData?.familyMembers?.every((item: FamilyMember) => item.seatNumber !== "") ? [{ text: 'Seat-Details', onClick: onHandleSeatDetails }] : []),
+  ];
 
   return (
     <>
@@ -92,12 +97,12 @@ const Header: React.FC = () => {
             <Avatar alt="User Avatar" src={picture} />
           </LogoContainer>
           <Box sx={{ flexGrow: 1 }} />
-          
+
           <NavButton color="primary">Home</NavButton>
           <NavButton color="primary">About</NavButton>
           <NavButton color="primary" onClick={onHandleContact}>Contact</NavButton>
           <NavButton color="primary" onClick={onHandleAdmin}>Admin</NavButton>
-          {userData ? 
+          {userData ?
             <NavButton color="primary" onClick={onHandleLogout}>Logout</NavButton> :
             <NavButton color="primary" onClick={onHandleregister}>Login</NavButton>
           }

@@ -27,6 +27,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
+import { FamilyMember } from '../../common/user';
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -85,8 +86,8 @@ const SeatDetails: React.FC = () => {
         fetchSeats();
     }, []);
 
-    const handleOpen = (seat?: any) => {
-        setCurrentSeat({ seatNumber: '', seatDetails: 'Window', seatStatus: true });
+    const handleOpen = (seat?:any ) => {
+        setCurrentSeat({ seatNumber: seat?.seatNumber? seat?.seatNumber : " ", seatDetails: seat?.seatDetails ?seat?.seatDetails:"Window" , seatStatus: seat?.seatStatus });
         setEditMode(!!seat?.seatNumber);
         setOpen(true);
     };
