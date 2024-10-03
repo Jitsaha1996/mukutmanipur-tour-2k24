@@ -24,6 +24,8 @@ import {
     CircularProgress,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/store';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [theme.breakpoints.down('sm')]: {
@@ -62,10 +64,12 @@ interface IUser {
 }
 
 const SeatConfirmation: React.FC = () => {
+    const userData = useSelector((state: RootState) => state.user.userData) as IUser | null;
     const theme = useTheme();
     const [users, setUsers] = useState<IUser[]>([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
+    const [selectedUserBeforeUpdate, setSelectedUserBeforeUpdate] = useState<IUser | null>(null);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [activeSeats, setActiveSeats] = useState<any[]>([]);
@@ -110,13 +114,15 @@ const SeatConfirmation: React.FC = () => {
     }, []);
 
     const handleEditClick = (user: IUser) => {
-        setSelectedUser(user);
+        setSelectedUserBeforeUpdate(JSON.parse(JSON.stringify(user))); // Clone the user object
+        setSelectedUser({ ...user }); // Create a shallow copy of the user
         setOpenDialog(true);
     };
 
     const handleDialogClose = () => {
         setOpenDialog(false);
         setSelectedUser(null);
+        setSelectedUserBeforeUpdate(null);
     };
 
     const handleUpdate = async () => {
@@ -124,6 +130,7 @@ const SeatConfirmation: React.FC = () => {
         if (!selectedUser) return;
 
         try {
+            setLoading(true);
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/edit/`, {
                 method: 'PUT',
                 headers: {
@@ -133,12 +140,35 @@ const SeatConfirmation: React.FC = () => {
             });
 
             if (!response.ok) throw new Error('Failed to update user');
+             
+            const seatsToActivate: any[] = [];
+        const seatsToDeactivate: any[] = [];
 
-            const bulkUpdatePayload = selectedUser.familyMembers.map(member => ({
-                seatNumber: member.seatNumber,
-                seatDetails: member.seatPreference,
-                seatStatus: false,
-            }));
+        // Check which seat numbers have changed
+        selectedUser.familyMembers.forEach((newMember: FamilyMember) => {
+            const oldMember = selectedUserBeforeUpdate?.familyMembers.find(
+                (member: FamilyMember) => member.name === newMember.name
+            );
+
+            if (oldMember) {
+                // If seat number has changed, make the old one available
+                if (oldMember.seatNumber !== newMember.seatNumber) {
+                    seatsToActivate.push({
+                        seatNumber: oldMember.seatNumber,
+                        seatDetails: oldMember.seatPreference,
+                        seatStatus: true, // Make this seat available
+                    });
+
+                    // Add the new seat to the deactivate list
+                    seatsToDeactivate.push({
+                        seatNumber: newMember.seatNumber,
+                        seatDetails: newMember.seatPreference,
+                        seatStatus: false, // Mark this seat as unavailable
+                    });
+                }
+            }
+        });
+
 
             const bulkUpdateResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/busseatdetals/bulkupdates`, {
 
@@ -147,11 +177,11 @@ const SeatConfirmation: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(bulkUpdatePayload),
+                body: JSON.stringify([...seatsToActivate,...seatsToDeactivate]),
             });
 
             if (!bulkUpdateResponse.ok) throw new Error('Failed to bulk update seats');
-
+            setLoading(false);
             setSnackbarMessage('Update successful!');
             setSnackbarOpen(true);
             // fetchActiveSeats();
@@ -161,6 +191,8 @@ const SeatConfirmation: React.FC = () => {
             console.error('Error updating user:', error);
             setSnackbarMessage('Update failed.');
             setSnackbarOpen(true);
+        }finally{
+            setLoading(false);
         }
     };
 
@@ -247,6 +279,9 @@ const SeatConfirmation: React.FC = () => {
                         Update
                     </Button>
                 </DialogActions>
+                <Backdrop open={loading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             </StyledDialog>
 
             <Snackbar

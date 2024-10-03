@@ -103,6 +103,7 @@ const AdminRegistration: React.FC = () => {
 
     const updateUser = async (user: any) => {
         try {
+            setLoading(true);
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/edit`, {
                 method: 'PUT',
                 headers: {
@@ -118,6 +119,8 @@ const AdminRegistration: React.FC = () => {
             );
         } catch (error) {
             console.error('Error updating user:', error);
+        }finally{
+            setLoading(false);
         }
     };
 
