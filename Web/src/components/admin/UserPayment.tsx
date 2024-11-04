@@ -147,7 +147,7 @@ const UserPayment: React.FC = () => {
                                     <Typography variant="body1">Family Members: {user.familyMembers.length}</Typography>
                                     <Typography  color="#555555" variant="body2">Seat Numbers: {getSeatDeatils(user.familyMembers)}</Typography>
                                     <PaymentCell type="expected">
-                                        Expected: {user.familyMembers.length * 1200}
+                                        Expected: {user.familyMembers.length * 1300}
                                     </PaymentCell>
                                     <PaymentCell type="paid">Paid: {user?.familyWiseCost?.paid}</PaymentCell>
                                     <PaymentCell type="due">Due: {user?.familyWiseCost?.due}</PaymentCell>
@@ -184,7 +184,7 @@ const UserPayment: React.FC = () => {
                         <Typography variant="h6" gutterBottom>Edit Payment Info</Typography>
                         <TextField
                             label="Expected Cost"
-                            value={selectedUser ? selectedUser.familyMembers.length * 1200 : 0}
+                            value={selectedUser ? selectedUser.familyMembers.length * 1300 : 0}
                             fullWidth
                             disabled
                             margin="normal"

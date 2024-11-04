@@ -121,9 +121,9 @@ const paymentInfoForFamilyWidse = asynHandler(async (req, res) => {
 const familymemberLength= userExist.familyMembers.length;
 
 const familyWiseCost={
-  expectedCost: (familymemberLength * 1200).toString(),
+  expectedCost: (familymemberLength * 1300).toString(),
   paid: payment,
-  due: ((familymemberLength * 1200) -parseInt(payment)).toString()
+  due: ((familymemberLength * 1300) -parseInt(payment)).toString()
 }
 
 

@@ -36,16 +36,34 @@ const SeatRow = styled.div`
   margin-bottom: 10px;
 `;
 
-const Seat = styled.div<{ selected: boolean }>`
+const Seat = styled.div<{ selected: string; hoverText: string }>`
   flex: 1;
   height: 40px;
-  background-color: ${({ selected }) => (selected ? '#4caf50' : '#ccc')};
+  background-color: ${({ selected }) => {
+    if (selected === 'self') return '#4caf50'; // Green for self
+    if (selected === 'oc') return 'red'; // Red for occupied
+    return '#ccc'; // Light gray for aoc
+  }};
   border: 1px solid #333;
   text-align: center;
   line-height: 40px;
   border-radius: 5px;
-  color: ${({ selected }) => (selected ? 'white' : 'black')};
+  color: ${({ selected }) => (selected === 'self' ? 'white' : selected === 'oc' ? 'blue' : 'black')};
   margin: 0 5px;
+  position: relative; // Needed for the tooltip
+
+  &:hover::after {
+    content: "${({ hoverText }) => hoverText}";
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    background-color: black;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
 `;
 
 const LastRow = styled.div`
@@ -62,56 +80,7 @@ const BusLayout: React.FC = () => {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [isSeatDetailsVisible, setIsSeatDetailsVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const storedUserData: IUser | null = getFromLocalStorage('userData');
-      if (storedUserData) {
-        try {
-          setLoading(true);
-          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/email/${storedUserData.email}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!response.ok) throw new Error('Failed to fetch user data');
-          const userData = await response.json();
-          if (userData) {
-            dispatch(setUser(userData));
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        } finally {
-          setLoading(false);
-          if (userData) {
-            const seatDetails = userData.familyMembers
-              .filter((member: FamilyMember) => member.seatNumber)
-              .map((member: FamilyMember) => member.seatNumber);
-              console.log("ttt",seatDetails);
-            setSelectedSeats(seatDetails as string[]);
-            setIsSeatDetailsVisible(seatDetails.length > 0);
-          }
-        }
-      }
-    };
-
-    fetchUserData();
-  }, [dispatch]);
-
-  const checkSeats=(selectedSeats:any,seat:any)=>{
-    console.log("sgkg",selectedSeats?.includes(seat.toString()));
-    if(selectedSeats?.some((item:string)=>item.trim() === seat))
-      return true;
-    else return false;
-   
-
-  }
-
-  // useEffect(() => {
-   
-  // }, [userData]);
+  const [users, setUsers] = useState<IUser[]>([]);
 
   const seats = {
     left: [
@@ -142,6 +111,72 @@ const BusLayout: React.FC = () => {
     lastRow: ['54', '55', '56', '57', '58', '59']
   };
 
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`);
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+    const fetchUserData = async () => {
+      const storedUserData: IUser | null = getFromLocalStorage('userData');
+      if (storedUserData) {
+        try {
+          setLoading(true);
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/email/${storedUserData.email}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) throw new Error('Failed to fetch user data');
+          const userData = await response.json();
+          if (userData) {
+            dispatch(setUser(userData));
+            const seatDetails = userData.familyMembers
+              .filter((member: FamilyMember) => member.seatNumber)
+              .map((member: FamilyMember) => member.seatNumber);
+            setSelectedSeats(seatDetails as string[]);
+            setIsSeatDetailsVisible(seatDetails.length > 0);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [dispatch]);
+
+  // Modify checkSeats function to return only string type
+  const checkSeats = (seat: string): string => {
+    // Check if the seat is selected by the user
+    if (selectedSeats.includes(seat)) {
+      return 'self';
+    }
+
+    // Check if the seat is occupied by a family member
+    for (const user of users) {
+      const member = user.familyMembers.find((member: FamilyMember) => member.seatNumber === seat);
+      if (member) {
+        return 'oc'; // Return 'oc' if occupied
+      }
+    }
+
+    return 'aoc'; // Otherwise return 'aoc'
+  };
+
   return (
     <>
       {isSeatDetailsVisible ? (
@@ -164,11 +199,19 @@ const BusLayout: React.FC = () => {
             <Side className="left-side">
               {seats.left.map((row, rowIndex) => (
                 <SeatRow key={rowIndex}>
-                  {row.map((seat) => (
-                    <Seat key={seat} selected={checkSeats(selectedSeats,seat)} >
-                      {seat}
-                    </Seat>
-                  ))}
+                  {row.map((seat) => {
+                    const seatStatus = checkSeats(seat);
+                    const hoverText = seatStatus === 'self' ? users
+                      .flatMap(user => user.familyMembers)
+                      .find(member => member.seatNumber === seat)?.name || '' : users
+                        .flatMap(user => user.familyMembers)
+                        .find(member => member.seatNumber === seat)?.name || '';
+                    return (
+                      <Seat key={seat} selected={seatStatus} hoverText={hoverText}>
+                        {seat}
+                      </Seat>
+                    );
+                  })}
                 </SeatRow>
               ))}
             </Side>
@@ -178,11 +221,19 @@ const BusLayout: React.FC = () => {
             <Side className="right-side">
               {seats.right.map((row, rowIndex) => (
                 <SeatRow key={rowIndex}>
-                  {row.map((seat) => (
-                    <Seat key={seat} selected={checkSeats(selectedSeats,seat)}>
-                      {seat}
-                    </Seat>
-                  ))}
+                  {row.map((seat) => {
+                    const seatStatus = checkSeats(seat);
+                    const hoverText = seatStatus === 'self' ? users
+                      .flatMap(user => user.familyMembers)
+                      .find(member => member.seatNumber === seat)?.name || '' : users
+                        .flatMap(user => user.familyMembers)
+                        .find(member => member.seatNumber === seat)?.name || '';
+                    return (
+                      <Seat key={seat} selected={seatStatus} hoverText={hoverText}>
+                        {seat}
+                      </Seat>
+                    );
+                  })}
                 </SeatRow>
               ))}
             </Side>
@@ -190,11 +241,19 @@ const BusLayout: React.FC = () => {
 
           <Box display="flex" flexDirection="row" width="100%">
             <LastRow className="last-row">
-              {seats.lastRow.map((seat) => (
-                <Seat key={seat} selected={checkSeats(selectedSeats,seat)}>
-                  {seat}
-                </Seat>
-              ))}
+              {seats.lastRow.map((seat) => {
+                const seatStatus = checkSeats(seat);
+                const hoverText = seatStatus === 'self' ? users
+                  .flatMap(user => user.familyMembers)
+                  .find(member => member.seatNumber === seat)?.name || '' : users
+                    .flatMap(user => user.familyMembers)
+                    .find(member => member.seatNumber === seat)?.name || '';
+                return (
+                  <Seat key={seat} selected={seatStatus} hoverText={hoverText}>
+                    {seat}
+                  </Seat>
+                );
+              })}
             </LastRow>
           </Box>
         </BusLayoutContainer>

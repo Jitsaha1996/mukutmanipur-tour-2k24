@@ -108,7 +108,7 @@ const SeatDetails: React.FC = () => {
             :  `${process.env.REACT_APP_API_URL}/api/busseatdetals/create`;
         const method = editMode ? 'PUT' : 'POST';
         const payload = {
-            seatNumber: currentSeat.seatNumber,
+            seatNumber: currentSeat.seatNumber?.trim(),
             seatDetails: currentSeat.seatDetails,
             seatStatus: currentSeat.seatStatus,
         };
