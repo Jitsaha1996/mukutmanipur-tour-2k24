@@ -211,7 +211,7 @@ const UserDetails: React.FC = () => {
         // User Details
         doc.setFontSize(20);
         doc.setTextColor(0, 0, 0); // Black color
-        doc.text("User Details", 10, 90);
+        doc.text(`User Details`, 10, 90);
         doc.setFontSize(14);
         doc.text(`Name: ${userData?.rName}`, 10, 110);
         doc.text(`Email: ${userData?.email}`, 10, 120);
@@ -226,8 +226,16 @@ const UserDetails: React.FC = () => {
         doc.setTextColor(0, 0, 0); // Black color
     
         let currentYPosition = 170; // Start position for family members
+        const pageHeight = doc.internal.pageSize.height; // Height of the page
+        const margin = 10; // Margin from the bottom of the page
     
-        familyMembers.forEach((member) => {
+        familyMembers.forEach((member, index) => {
+            // Check if we need to create a new page
+            if (currentYPosition + 40 > pageHeight - margin) {
+                doc.addPage(); // Add a new page
+                currentYPosition = 10; // Reset Y position for the new page
+            }
+    
             doc.setTextColor(0, 100, 0); // Dark green for member name
             doc.text(`- Name: ${member.name}`, 10, currentYPosition);
             
@@ -245,13 +253,19 @@ const UserDetails: React.FC = () => {
         });
     
         // Add Boarding Pass Header
+        if (currentYPosition + 30 > pageHeight - margin) {
+            doc.addPage(); // Add a new page if needed
+            currentYPosition = 10; // Reset Y position for the new page
+        }
+        
         doc.setFontSize(18);
         doc.setTextColor(255, 0, 0); // Red for boarding pass
-        doc.text("Mahadev Ke Dewane Boarding Pass", 10, currentYPosition );
-        
+        doc.text("Mahadev Ke Dewane Boarding Pass", 10, currentYPosition);
+    
         // Save the document
-        doc.save("user_details.pdf");
+        doc.save(`user_details_${userData?.rName}.pdf`);
     };
+    
 
     const handleAnnouncementClick = () => {
         setOpenSnackbar(true);

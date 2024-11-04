@@ -175,7 +175,7 @@ const AdminRegistration: React.FC = () => {
                             {users.map((user) => (
                                 <TableRow key={user._id}>
                                     <StyledTableCell>
-                                        {user.rName} ({user.email})
+                                        {user.rName} ({user.phone})
                                     </StyledTableCell>
                                     <StyledTableCell>
                                         {user.isConfirmSeatBooking ? 'Approved' : 'Pending'}

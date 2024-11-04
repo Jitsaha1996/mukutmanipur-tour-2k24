@@ -188,6 +188,10 @@ const Budget: React.FC = () => {
                                     </PieChart>
                                 </ResponsiveContainer>
                             </BudgetCard>
+                            <BudgetCard>
+                                <Typography variant="h5">Remaining Balance</Typography>
+                                <Typography variant="h6">{currentBudget - totalExpenses}</Typography>
+                            </BudgetCard>
                         </Grid>
                     </Grid>
                     {userData?.isAdmin && userData?.isCashier ? <ActionButton

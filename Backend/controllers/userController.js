@@ -184,7 +184,7 @@ const authUsers = asynHandler(async (req, res) => {
 })
 const getUserList = asynHandler(async (req, res) => {
   try {
-    const userList = await User.find().select('rName email isAdmin isConfirmSeatBooking isArchived familyMembers familyWiseCost');
+    const userList = await User.find().select('rName phone email isAdmin isConfirmSeatBooking isArchived familyMembers familyWiseCost');
     
     // If no users found, respond with 204 No Content
     if (!userList.length) {
