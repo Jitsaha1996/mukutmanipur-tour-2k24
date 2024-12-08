@@ -19,6 +19,10 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save'; // Import an icon for the export button
 import { saveAs } from 'file-saver'; // npm install file-saver
+import jsPDF from 'jspdf'; // npm install jspdf
+import 'jspdf-autotable'; // npm install jspdf-autotable
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; // PDF Icon
+import picture from '../../assets/baba.jpg';
 
 // Styled components for better responsiveness
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -124,6 +128,83 @@ const AdminRegistration: React.FC = () => {
         }
     };
 
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        const title = 'Mahadev Ke Deewane';
+        const subtitle = 'Night to Night Picnic of 28th Dec MukutManiPur';
+    
+        // Base64 logo image (replace this with your actual logo in base64 format)
+        const logo = picture;
+        const imgData = logo; // Use your logo's base64 string here.
+    
+        // Add the logo
+        const logoWidth = 40;
+        const logoHeight = 40;
+        const pageWidth = doc.internal.pageSize.width;
+        doc.addImage(imgData, 'JPEG', (pageWidth - logoWidth) / 2, 10, logoWidth, logoHeight);
+    
+        // Add the title and subtitle
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor('#FF5733'); // Bright orange title
+        doc.text(title, pageWidth / 2, 60, { align: 'center' });
+    
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor('#555555'); // Gray subtitle
+        doc.text(subtitle, pageWidth / 2, 70, { align: 'center' });
+    
+        // Filter out archived users
+        const activeUsers = users.filter(user => !user.isArchived);
+    
+        // Prepare table data
+        const tableData: any[] = [];
+        activeUsers.forEach((user) => {
+            const familyData = user.familyMembers.map((member: any, index: number) => [
+                index === 0 ? user.rName : '', // Only show rName in the first row for a family
+                member.seatNumber || 'N/A',
+                member.name || 'N/A',
+            ]);
+    
+            tableData.push(...familyData);
+            tableData.push(['', '', '']); // Add an empty row between families
+        });
+    
+        // Add table to the PDF
+        (doc as any).autoTable({
+            head: [['Name', 'Seat Numbers', 'Family Member Names']], // Table headers
+            body: tableData,
+            startY: 80, // Start table after header
+            theme: 'grid', // Adds a grid style to the table
+            styles: {
+                fontSize: 10, // Table font size
+                cellPadding: 4, // Padding inside cells
+                halign: 'center', // Center-align text
+            },
+            headStyles: {
+                fillColor: [0, 128, 255], // Bright blue header
+                textColor: [255, 255, 255], // White header text
+                fontStyle: 'bold',
+            },
+            alternateRowStyles: {
+                fillColor: [240, 240, 240], // Light gray alternating rows
+            },
+            margin: { top: 80 }, // Add space at the top
+        });
+    
+        // Add footer
+        const pageHeight = doc.internal.pageSize.height;
+        doc.setFontSize(10);
+        doc.setTextColor('#888888');
+        doc.text('Copy Right By Mahadev Ke Dewanee', pageWidth / 2, pageHeight - 10, { align: 'center' });
+    
+        // Save the PDF
+        doc.save('users_seat_details.pdf');
+    };
+    
+    
+
+
     const exportToCSV = () => {
         const csvData = users.flatMap(user => 
             user.familyMembers.map((member:any) => ({
@@ -159,6 +240,9 @@ const AdminRegistration: React.FC = () => {
                     sx={{ marginLeft: 1 }} // Add some left margin
                 >
                     <SaveIcon />
+                </IconButton>
+                <IconButton onClick={exportToPDF} color="secondary" sx={{ marginLeft: 1 }}>
+                    <PictureAsPdfIcon />
                 </IconButton>
             </Box>
             <StyledTableContainer>
