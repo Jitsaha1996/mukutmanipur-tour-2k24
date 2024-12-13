@@ -19,4 +19,5 @@ export interface IUser {
     isAdmin?:boolean;
     isArchived?:boolean;
     isCashier?:boolean;
+    familyWiseCost?:any;
 }

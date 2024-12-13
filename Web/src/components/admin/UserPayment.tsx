@@ -14,6 +14,7 @@ import {
 import { styled } from '@mui/material/styles';
 import Fade from '@mui/material/Fade';
 import EditIcon from '@mui/icons-material/Edit';
+import { IUser } from '../../common/user';
 
 const PaymentCell = styled(Box)(({ type }: { type: string }) => ({
     textAlign: 'center',
@@ -45,7 +46,7 @@ const UserPayment: React.FC = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [modalOpen, setModalOpen] = useState<boolean>(false);
-    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [selectedUser, setSelectedUser] = useState<IUser|null>(null);
     const [paid, setPaid] = useState<string>('');
     const [page, setPage] = useState<number>(1);
     const itemsPerPage = 6;
@@ -147,7 +148,7 @@ const UserPayment: React.FC = () => {
                                     <Typography variant="body1">Family Members: {user.familyMembers.length}</Typography>
                                     <Typography  color="#555555" variant="body2">Seat Numbers: {getSeatDeatils(user.familyMembers)}</Typography>
                                     <PaymentCell type="expected">
-                                        Expected: {user.familyMembers.length * 1300}
+                                        Expected: {user.familyWiseCost.expectedCost}
                                     </PaymentCell>
                                     <PaymentCell type="paid">Paid: {user?.familyWiseCost?.paid}</PaymentCell>
                                     <PaymentCell type="due">Due: {user?.familyWiseCost?.due}</PaymentCell>
@@ -184,7 +185,7 @@ const UserPayment: React.FC = () => {
                         <Typography variant="h6" gutterBottom>Edit Payment Info</Typography>
                         <TextField
                             label="Expected Cost"
-                            value={selectedUser ? selectedUser.familyMembers.length * 1300 : 0}
+                            value={selectedUser ? selectedUser.familyWiseCost?.expectedCost : 0}
                             fullWidth
                             disabled
                             margin="normal"
